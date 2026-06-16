@@ -1,0 +1,9 @@
+node_modules/
+.ti_cache.json
+.ti_data_partial.json
+*.zip
+ti-draft-share/
+TI Legends Draft-v*.html
+TI Legends Draft0.*.html
+TI Legends Draft-0.*.html
+TI Legends Draft.html

@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.opendota.com)",
+      "Bash(curl -s \"https://api.opendota.com/api/leagues/29\")",
+      "Bash(curl -s \"https://api.opendota.com/api/leagues/65006\")",
+      "Bash(curl -s \"https://api.opendota.com/api/leagues/138\")",
+      "Bash(curl -s \"https://api.opendota.com/api/leagues/600\")",
+      "Bash(curl -s \"https://api.opendota.com/api/leagues/2733\")",
+      "Bash(curl -s \"https://api.opendota.com/api/leagues/4664\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d,indent=2\\)\\)\")",
+      "Bash(curl *)",
+      "Bash(python3 -c ' *)",
+      "WebFetch(domain:docs.opendota.com)",
+      "Read(//c/Users/22733/AppData/Local/Programs/**)",
+      "Bash(ls /c/Program*/Python*/python.exe)",
+      "Bash(python *)",
+      "Bash(node *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(npx vite *)",
+      "Skill(run)",
+      "Bash(npx playwright *)",
+      "Bash(cmd *)",
+      "Bash(npx vercel *)",
+      "Bash(npx --yes vercel --version)",
+      "Bash(npx --yes surge dist/ --project ti-draft-game)",
+      "Bash(npx --yes serve dist -l 8080 -s --no-clipboard)",
+      "Bash(rm -f ti-draft-game.zip)",
+      "Bash(powershell -Command \"Compress-Archive -Path ti-draft-share\\\\* -DestinationPath ti-draft-game.zip\")",
+      "Bash(npm install *)",
+      "Bash(cp dist/index.html \"TI Legends Draft.html\")",
+      "Bash(echo \"Updated: TI Legends Draft.html \\($\\(node -e 'const fs=require\\(\\\\\"fs\\\\\"\\); process.stdout.write\\(\\(fs.statSync\\(\\\\\"TI Legends Draft.html\\\\\"\\).size/1024\\).toFixed\\(0\\)+\\\\\"KB\\\\\"\\)'\\)\\)\")",
+      "Bash(echo \"Size: $\\(node -e 'const fs=require\\(\\\\\"fs\\\\\"\\);console.log\\(\\(fs.statSync\\(\\\\\"TI Legends Draft.html\\\\\"\\).size/1024\\).toFixed\\(0\\)+\\\\\"KB\\\\\"\\)'\\)\")",
+      "Bash(npx --yes wrangler --version)",
+      "Bash(npx wrangler *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m '🎮 TI Legends Draft 举盾 - 初始版本 *)",
+      "Bash(git config *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
