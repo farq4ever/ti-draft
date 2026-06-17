@@ -240,9 +240,7 @@ const POS_DEF = {
 };
 
 const TIS = {
-  TI4:{lid:600}, TI5:{lid:2733}, TI6:{lid:4664}, TI7:{lid:5401},
-  TI8:{lid:9870}, TI9:{lid:10749}, TI10:{lid:13256}, TI11:{lid:14268},
-  TI12:{lid:15728}, TI13:{lid:16935},
+  TI4:{lid:600}, TI8:{lid:9870}, TI10:{lid:13256},
 };
 
 const raw = fs.readFileSync(OUT, 'utf8');
@@ -268,9 +266,10 @@ async function main() {
     const list = cache.leagueMatches?.[ck];
     if (!list?.length) continue;
 
-    // 按match_id降序, 取前40场(最新=最可能正赛)
-    const sorted = [...list].sort((a,b)=>b.match_id-a.match_id).slice(0,60);
-    console.log(`\n${tiKey}: ${sorted.length}场 (最高ID:${sorted[0]?.match_id})`);
+    // 全量: 每场比赛
+    console.log(`\n${tiKey}: ${list.length}场全量`);
+
+    const sorted = list;
 
     let tiId=0, tiStats=0, tiNew=0;
     for (const m of sorted) {

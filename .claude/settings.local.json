@@ -37,7 +37,15 @@
       "Bash(git add *)",
       "Bash(git commit -m '🎮 TI Legends Draft 举盾 - 初始版本 *)",
       "Bash(git config *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git rm *)",
+      "Bash(git push *)",
+      "Bash(kill %1)",
+      "Bash(npx --yes http-server docs -p 8765 --silent)",
+      "Bash(grep -oP 'https?://[^\"\\\\x27\\\\s`]+' \"D:\\\\ti-draft-game/docs/index.html\")",
+      "Bash(grep *)"
     ]
   }
 }

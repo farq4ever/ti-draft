@@ -760,8 +760,8 @@ async function collectTI(tiKey, tiMeta) {
         }
       }
 
-      // 需要至少80分才算有效匹配（高阈值减少误匹配）
-      const validMatch = bestScore >= 80;
+      // 需要至少65分才算有效匹配
+      const validMatch = bestScore >= 65;
       if (validMatch) usedAccounts.add(bestId);
       const agg = validMatch ? aggregatePlayer(byAccount[bestId]) : null;
 
