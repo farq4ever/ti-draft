@@ -111,7 +111,7 @@ const HIDDEN_TRAITS = [
 
 export function assignHiddenTraits(players) {
   return players.map(p => {
-    const count = Math.random() < 0.03 ? 2 : Math.random() < 0.15 ? 1 : 0;
+    const count = Math.random() < 0.02 ? 2 : Math.random() < 0.08 ? 1 : 0;
     if (count === 0) return { ...p, traits: [] };
     const shuffled = [...HIDDEN_TRAITS].sort(() => Math.random() - 0.5);
     const assigned = shuffled.slice(0, count);
