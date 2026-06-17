@@ -216,18 +216,31 @@ function matchPlayer(apiName, ourName) {
   if (!a || a.length < 2) return false;
   const n = norm(ourName);
   if (a === n) return true;
+
+  // 别名精确匹配
   const aliases = ALIASES[n] || [];
   for (const alias of aliases) {
     const al = norm(alias);
     if (!al || al.length < 2) continue;
     if (a === al) return true;
-    // 长名包含 (≥5字符)
     if (al.length >= 5 && a.includes(al)) return true;
     if (a.length >= 5 && al.includes(a)) return true;
   }
-  // 宽松匹配: API名包含玩家名或反之 (≥4字符)
+
+  // 通用包含匹配 (≥4字符, 防止 "a" 匹配 "abc")
   if (n.length >= 4 && a.includes(n)) return true;
   if (a.length >= 4 && n.includes(a)) return true;
+
+  // 单词级匹配: 拆分api名, 看是否有单词匹配
+  const aWords = a.split(/[\s_.-]+/).filter(w => w.length >= 3);
+  const nWords = n.split(/[\s_.-]+/).filter(w => w.length >= 3);
+  for (const aw of aWords) {
+    for (const nw of nWords) {
+      if (aw === nw) return true;
+      if (aw.length >= 4 && nw.length >= 4 && (aw.includes(nw) || nw.includes(aw))) return true;
+    }
+  }
+
   return false;
 }
 
@@ -240,7 +253,9 @@ const POS_DEF = {
 };
 
 const TIS = {
-  TI4:{lid:600}, TI8:{lid:9870}, TI10:{lid:13256},
+  TI4:{lid:600}, TI5:{lid:2733}, TI6:{lid:4664}, TI7:{lid:5401},
+  TI8:{lid:9870}, TI9:{lid:10749}, TI10:{lid:13256}, TI11:{lid:14268},
+  TI12:{lid:15728}, TI13:{lid:16935},
 };
 
 const raw = fs.readFileSync(OUT, 'utf8');
@@ -252,6 +267,15 @@ console.log(`开始: API ${startApi}/${players.length}\n`);
 
 async function main() {
   let idFixed = 0, statsUpdated = 0, newApi = 0;
+
+  // account_id__ti → player 索引 (O(1) 查找)
+  const idx = {};
+  for (const p of players) {
+    if (!p.account_id || p.account_id < 1000 || !TIS[p.ti]) continue;
+    const key = p.account_id + '__' + p.ti;
+    if (!idx[key]) idx[key] = [];
+    idx[key].push(p);
+  }
 
   // 按TI名字建索引
   const byTi = {};
@@ -266,10 +290,9 @@ async function main() {
     const list = cache.leagueMatches?.[ck];
     if (!list?.length) continue;
 
-    // 全量: 每场比赛
-    console.log(`\n${tiKey}: ${list.length}场全量`);
-
-    const sorted = list;
+    // 全量
+    const sorted = [...list];
+    console.log(`\n${tiKey}: ${sorted.length}场`);
 
     let tiId=0, tiStats=0, tiNew=0;
     for (const m of sorted) {
@@ -281,10 +304,16 @@ async function main() {
         if (!p.account_id) continue;
         const pn = p.personaname || '';
 
-        // 找匹配的数据库选手
-        const targets = byTi[tiKey] || [];
+        // 先 O(1) 按 account_id 查找
+        const key = p.account_id + '__' + tiKey;
+        let targets = idx[key] || [];
+
+        // 找不到就按名字匹配
+        if (!targets.length) {
+          targets = (byTi[tiKey] || []).filter(t => matchPlayer(pn, t.name));
+        }
+
         for (const t of targets) {
-          if (!matchPlayer(pn, t.name)) continue;
 
           // 匹配成功! 更新ID
           if (t.account_id !== p.account_id) {
