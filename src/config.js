@@ -111,7 +111,7 @@ const HIDDEN_TRAITS = [
 
 export function assignHiddenTraits(players) {
   return players.map(p => {
-    const count = Math.random() < 0.06 ? 2 : Math.random() < 0.30 ? 1 : 0;
+    const count = Math.random() < 0.03 ? 2 : Math.random() < 0.15 ? 1 : 0;
     if (count === 0) return { ...p, traits: [] };
     const shuffled = [...HIDDEN_TRAITS].sort(() => Math.random() - 0.5);
     const assigned = shuffled.slice(0, count);
@@ -124,10 +124,10 @@ export function assignHiddenTraits(players) {
 // ═══════════════ 成就系统 ═══════════════
 export const ACHIEVEMENTS = [
   { id:'first_game',   icon:'🎮', title:'初次选秀',   desc:'完成第一次选秀', check: n => n >= 1 },
-  { id:'first_win',    icon:'🏆', title:'冠军之路',   desc:'第一次夺得TI冠军', check: (n,r) => r === 'champion' },
-  { id:'three_wins',   icon:'👑', title:'三冠王',     desc:'累计3次夺冠', check: n => n >= 3 },
-  { id:'five_wins',    icon:'🌟', title:'TI传奇',     desc:'累计5次夺冠', check: n => n >= 5 },
-  { id:'ten_wins',     icon:'💎', title:'不朽之皇',   desc:'累计10次夺冠', check: n => n >= 10 },
+  { id:'first_win',    icon:'🏆', title:'冠军之路',   desc:'第一次夺得TI冠军', check: (n,wins) => wins >= 1 },
+  { id:'three_wins',   icon:'👑', title:'三冠王',     desc:'累计3次夺冠', check: (n,wins) => wins >= 3 },
+  { id:'five_wins',    icon:'🌟', title:'TI传奇',     desc:'累计5次夺冠', check: (n,wins) => wins >= 5 },
+  { id:'ten_wins',     icon:'💎', title:'不朽之皇',   desc:'累计10次夺冠', check: (n,wins) => wins >= 10 },
   { id:'all_cn',       icon:'🐉', title:'中国荣耀',   desc:'组成全华班阵容', check: (n,r,roster) => roster && Object.values(roster).every(p => p && (REGIONS[p.name]==='CN')) },
   { id:'all_eu',       icon:'👑', title:'欧洲贵族',   desc:'组成全欧班阵容', check: (n,r,roster) => roster && Object.values(roster).every(p => p && (REGIONS[p.name]==='EU')) },
   { id:'all_sea',      icon:'🌴', title:'南洋风暴',   desc:'组成全东南亚阵容', check: (n,r,roster) => roster && Object.values(roster).every(p => p && (REGIONS[p.name]==='SEA')) },
@@ -135,7 +135,6 @@ export const ACHIEVEMENTS = [
   { id:'same_ti',      icon:'🕰️', title:'经典重现',   desc:'5名选手来自同一届TI', check: (n,r,roster) => roster && new Set(Object.values(roster).filter(Boolean).map(p=>p.ti)).size === 1 },
   { id:'chemistry',    icon:'💫', title:'完美羁绊',   desc:'化学反应达到+5以上', check: (n,r,roster) => roster && calcChemistry(roster).bonus >= 5 },
   { id:'chemistry_15', icon:'✨', title:'命运之链',   desc:'化学反应达到+8以上', check: (n,r,roster) => roster && calcChemistry(roster).bonus >= 8 },
-  { id:'beat_ai',      icon:'🤖', title:'击败AI',     desc:'在AI对手面前夺冠', check: (n,r,roster,aiScore) => aiScore !== undefined && r === 'champion' },
   { id:'fireworks',    icon:'🎆', title:'烟火神',     desc:'连续3次获得亚军', check: (n,r,roster,aiScore,meta) => meta?.consecutiveFinalist >= 3 },
   { id:'streak2',      icon:'⚡', title:'连冠王者',   desc:'连续2次夺冠', check: (n,r,roster,aiScore,meta) => meta?.consecutiveChampion >= 2 },
   { id:'streak3',      icon:'👑', title:'王朝建立者', desc:'连续3次夺冠', check: (n,r,roster,aiScore,meta) => meta?.consecutiveChampion >= 3 },

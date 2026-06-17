@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { RefreshCw, Trophy, Shield, Sparkles, ChevronDown, ChevronUp, RotateCcw, Dices, Share2, Bot, Award, Zap, Star } from 'lucide-react';
+import { RefreshCw, Trophy, Shield, Sparkles, ChevronDown, ChevronUp, RotateCcw, Dices, Share2, Award, Zap, Star } from 'lucide-react';
 import { TI_PLAYERS, TI_POOLS, POS_LABELS, POS_DISPLAY, playerScore, finalScore, getTIRank, sfx, assignHiddenTraits, calcChemistry, ACHIEVEMENTS, loadAchievements, saveAchievements, getMeta, saveMeta } from './config';
 
 const POOL_KEYS = Object.keys(TI_POOLS);
@@ -34,17 +34,14 @@ export default function App() {
   const [history, setHistory] = useState([]);
   const [expandedPlayer, setExpandedPlayer] = useState(null);
   const [mobileTab, setMobileTab] = useState('pool');
-  const [aiRoster, setAiRoster] = useState(null);
   const [showCard, setShowCard] = useState(false);
   const [newAchievements, setNewAchievements] = useState([]);
   const [showAchievements, setShowAchievements] = useState(false);
   const [traitReveal, setTraitReveal] = useState(null);
-  const [aiPicks, setAiPicks] = useState([]);
   const traitTimer = useRef(null);
   const canvasRef = useRef(null);
 
   const myScore = phase === 'reveal' ? finalScore(roster) : null;
-  const aiScore = aiRoster ? finalScore(aiRoster) : null;
   const rankInfo = myScore ? getTIRank(myScore) : null;
   const chemistry = phase === 'reveal' ? calcChemistry(roster) : { bonus: 0, details: [] };
 
@@ -52,7 +49,7 @@ export default function App() {
     if (phase === 'reveal') return;
     setRound(1); setRoster({ 1: null, 2: null, 3: null, 4: null, 5: null });
     setPhase('draft'); setHistory([]); setExpandedPlayer(null); setRerolls(2);
-    setAiRoster(null); setAiPicks([]); setShowCard(false); setNewAchievements([]);
+    setShowCard(false); setNewAchievements([]);
     setPool(pickTeam());
     sfx('click');
   };
@@ -93,59 +90,8 @@ export default function App() {
   };
 
   const advanceRound = (newRoster) => {
-    // AI picks from current pool (picks best available for its next empty position)
-    const aiR = { 1: null, 2: null, 3: null, 4: null, 5: null };
-    // Build AI roster from existing picks + new pick
-    aiPicks.forEach(ap => { aiR[ap.pos] = ap.player; });
-    // AI picks for the same round
-    const aiNextPos = [1,2,3,4,5].find(p => !aiR[p]);
-    if (aiNextPos) {
-      const available = pool.players.filter(p => {
-        const alreadyPicked = Object.values(newRoster).some(r => r?.name === p.name);
-        const aiAlreadyPicked = aiPicks.some(ap => ap.player.name === p.name);
-        return !alreadyPicked && !aiAlreadyPicked;
-      });
-      const canPlay = available.filter(p => {
-        const allowed = Array.isArray(p.allowedPos) ? p.allowedPos : [p.allowedPos];
-        return allowed.includes(aiNextPos);
-      });
-      if (canPlay.length > 0) {
-        const best = canPlay.sort((a,b) => playerScore(b, aiNextPos) - playerScore(a, aiNextPos))[0];
-        setAiPicks([...aiPicks, { round, player: best, pos: aiNextPos }]);
-      }
-    }
-
     if (round < 5) { setRound(round + 1); setPool(pickTeam()); }
-    else {
-      // Build final AI roster
-      setTimeout(() => {
-        const finalAi = { 1: null, 2: null, 3: null, 4: null, 5: null };
-        const allAiPicks = [...aiPicks];
-        // If AI didn't get a pick this round, add one now
-        if (aiNextPos && canPlay?.length > 0) {
-          const best = canPlay.sort((a,b) => playerScore(b, aiNextPos) - playerScore(a, aiNextPos))[0];
-          allAiPicks.push({ round, player: best, pos: aiNextPos });
-        }
-        allAiPicks.forEach(ap => { finalAi[ap.pos] = ap.player; });
-        // Fill remaining AI positions from random teams
-        for (let pos = 1; pos <= 5; pos++) {
-          if (finalAi[pos]) continue;
-          const t = pickTeam();
-          const avail = t.players.filter(p => {
-            const alreadyUsed = Object.values(finalAi).some(r => r?.name === p.name)
-              || Object.values(newRoster).some(r => r?.name === p.name);
-            return !alreadyUsed;
-          });
-          const cp = avail.filter(p => {
-            const allowed = Array.isArray(p.allowedPos) ? p.allowedPos : [p.allowedPos];
-            return allowed.includes(pos);
-          });
-          if (cp.length > 0) finalAi[pos] = cp.sort((a,b) => playerScore(b,pos) - playerScore(a,pos))[0];
-        }
-        setAiRoster(finalAi);
-      }, 100);
-      endGame(newRoster);
-    }
+    else { endGame(newRoster); }
   };
 
   const endGame = (finalRoster) => {
@@ -156,15 +102,17 @@ export default function App() {
       if (score >= 76) { fireConfetti(); sfx('champion'); }
       else if (score < 55) sfx('fail');
     }, 1800);
-    checkAchievements(finalRoster, aiRoster);
+    checkAchievements(finalRoster);
   };
 
-  const checkAchievements = (rost, aiR) => {
+  const checkAchievements = (rost) => {
     const stored = loadAchievements();
     const newOnes = [];
     const totalGames = (stored.totalGames || 0) + 1;
     stored.totalGames = totalGames;
     const rank = getTIRank(finalScore(rost));
+    const totalWins = (stored.totalWins || 0) + (rank.id === 'champion' ? 1 : 0);
+    stored.totalWins = totalWins;
     const oldPrevResult = getMeta().prevResult;  // 保留上一把的结果（saveMeta 会覆盖）
     const meta = saveMeta(rank.id, { rerollsUsed: 2 - rerolls });
     // 涅槃成就需要查看「上一把」结果，传入合并后的 meta
@@ -173,10 +121,9 @@ export default function App() {
       if (stored[a.id]) return;
       let earned = false;
       if (a.check.length <= 1) earned = a.check(totalGames);
-      else if (a.check.length === 2) earned = a.check(totalGames, rank.id);
+      else if (a.check.length === 2) earned = a.check(totalGames, totalWins);
       else if (a.check.length === 3) earned = a.check(totalGames, rank.id, rost);
-      else if (a.check.length === 4) earned = a.check(totalGames, rank.id, rost, aiR ? finalScore(aiR) : undefined);
-      else earned = a.check(totalGames, rank.id, rost, aiR ? finalScore(aiR) : undefined, metaWithOldPrev);
+      else earned = a.check(totalGames, rank.id, rost, undefined, metaWithOldPrev);
       if (earned) { stored[a.id] = Date.now(); newOnes.push(a); }
     });
     saveAchievements(stored);
@@ -465,19 +412,13 @@ export default function App() {
                 <RosterPanel roster={roster} score={null} />
               </div>
             </div>
-            {/* AI panel — visible on both mobile tabs and desktop */}
-            {aiPicks.length > 0 && (
-              <div className="mt-3 block">
-                <AIPanel aiPicks={aiPicks} />
-              </div>
-            )}
           </>
         )}
 
         {/* REVEAL PHASE */}
         {phase === 'reveal' && (
           <RevealScreen roster={roster} score={myScore} rankInfo={rankInfo} chemistry={chemistry}
-            aiRoster={aiRoster} aiScore={aiScore} onNewGame={() => window.location.reload()}
+            onNewGame={() => window.location.reload()}
             onShare={generateShareCard} showCard={showCard} closeCard={() => setShowCard(false)}
             canvasRef={canvasRef} onDownload={downloadCard} />
         )}
@@ -573,12 +514,9 @@ function RosterPanel({ roster, score }) {
 }
 
 // ═══════════════ REVEAL SCREEN ═══════════════
-function RevealScreen({ roster, score, rankInfo, chemistry, aiRoster, aiScore, onNewGame, onShare, showCard, closeCard, canvasRef, onDownload }) {
+function RevealScreen({ roster, score, rankInfo, chemistry, onNewGame, onShare, showCard, closeCard, canvasRef, onDownload }) {
   const [step, setStep] = useState(0);
   useEffect(() => { const t1=setTimeout(()=>setStep(1),300),t2=setTimeout(()=>setStep(2),900),t3=setTimeout(()=>setStep(3),1600); return ()=>{clearTimeout(t1);clearTimeout(t2);clearTimeout(t3)}; }, []);
-  const aiRank = aiScore ? getTIRank(aiScore) : null;
-  const won = aiScore !== null && score >= aiScore;
-
   return (
     <div className="max-w-lg mx-auto text-center px-2">
       {step >= 1 && (<>
@@ -616,15 +554,6 @@ function RevealScreen({ roster, score, rankInfo, chemistry, aiRoster, aiScore, o
             <h2 className="text-lg md:text-2xl font-black italic text-white mt-1 md:mt-2 mb-0.5">{rankInfo?.title||''}</h2>
             <p className="text-white/50 text-[10px] md:text-xs font-bold uppercase tracking-wider mb-3">{rankInfo?.desc||''}</p>
 
-            {/* AI comparison */}
-            {aiRoster && aiScore !== null && (
-              <div className={`border rounded-xl p-3 mb-4 text-left ${won ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
-                <div className="flex items-center gap-1.5 mb-2"><Bot size={14} className={won?'text-green-400':'text-red-400'} /><span className="text-[10px] font-black text-white/60 uppercase">AI 对手</span><span className={`ml-auto font-black text-sm ${won?'text-green-400':'text-red-400'}`}>{aiScore}分 · {aiRank?.title}</span></div>
-                <div className="grid grid-cols-5 gap-1">{[1,2,3,4,5].map(pos => { const p=aiRoster[pos]; return p ? (<div key={pos} className="text-center"><div className="text-[7px] text-white/20 font-black">{POS_LABELS[pos]}</div><div className="text-[9px] font-bold text-white/60 truncate">{p.name}</div><div className="text-[8px] font-mono text-white/40">{playerScore(p,pos)}</div></div>) : (<div key={pos} className="text-white/10 text-[9px]">-</div>); })}</div>
-                <div className="text-center mt-1.5 text-[10px] font-black"><span className={won?'text-green-400':'text-red-400'}>{won ? '✅ 你战胜了AI对手!' : '❌ AI对手战胜了你'}</span></div>
-              </div>
-            )}
-
             <div className="border-t border-white/10 pt-4 md:pt-6 mb-5 md:mb-8"><p className="text-white/40 text-[10px] md:text-xs italic leading-relaxed px-2">{getFlavorText(score)}</p></div>
             <div className="flex gap-2 justify-center flex-wrap">
               <button onClick={onNewGame} className="bg-white text-black px-8 md:px-10 py-3 md:py-3.5 rounded-full font-black uppercase tracking-[0.15em] text-[10px] md:text-xs hover:scale-105 active:scale-95 transition-all shadow-xl cursor-pointer">再来一局</button>
@@ -661,30 +590,3 @@ const FLAVOR_POOLS = {
 };
 function pickFlavor(pool) { const t=pool.reduce((s,x)=>s+x.w,0); let r=Math.random()*t; for(const x of pool){ r-=x.w; if(r<=0) return x.t; } return pool[0].t; }
 function getFlavorText(score) { if(score>=76)return pickFlavor(FLAVOR_POOLS.champion); if(score>=71)return pickFlavor(FLAVOR_POOLS.finalist); if(score>=66)return pickFlavor(FLAVOR_POOLS.top4); if(score>=61)return pickFlavor(FLAVOR_POOLS.top8); if(score>=56)return pickFlavor(FLAVOR_POOLS.group); return pickFlavor(FLAVOR_POOLS.qualifier); }
-
-// ═══════════════ AI PANEL ═══════════════
-function AIPanel({ aiPicks }) {
-  return (
-    <div className="bg-white/[0.02] border border-purple-500/20 rounded-2xl p-3">
-      <div className="flex items-center gap-1.5 mb-2">
-        <Bot size={12} className="text-purple-400" />
-        <span className="text-[9px] font-black text-purple-400/70 uppercase tracking-wider">AI 对手阵容</span>
-      </div>
-      <div className="space-y-1">
-        {aiPicks.map((ap, i) => (
-          <div key={i} className="flex items-center gap-2 text-[10px]">
-            <span className="font-black text-white/30 w-4">{ap.pos}</span>
-            <span className="font-bold text-white/70 truncate flex-1">{ap.player.name}</span>
-            <span className="font-mono text-white/30 text-[9px]">{playerScore(ap.player, ap.pos)}</span>
-          </div>
-        ))}
-        {[1,2,3,4,5].filter(p => !aiPicks.some(ap => ap.pos === p)).map(p => (
-          <div key={p} className="flex items-center gap-2 text-[10px]">
-            <span className="font-black text-white/10 w-4">{p}</span>
-            <span className="text-white/10 italic flex-1">等待选择...</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
