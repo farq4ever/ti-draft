@@ -2188,12 +2188,12 @@ export const TI_PLAYERS = [
     "matchCount": 57,
     "source": "api",
     "stats": {
-      "gpm": 357.4,
-      "xpm": 352.3,
+      "gpm": 355.9,
+      "xpm": 352.6,
       "kda": 3.6,
       "lane_eff": 53,
       "hero_pool": 25,
-      "assists": 8.9,
+      "assists": 9,
       "obs_placed": 3,
       "sen_placed": 1,
       "obs_denied": 44,
@@ -2406,22 +2406,22 @@ export const TI_PLAYERS = [
     "ti": "TI5",
     "team": "EG",
     "account_id": 87382579,
-    "matchCount": 18,
+    "matchCount": 10,
     "source": "api",
     "stats": {
-      "gpm": 287,
-      "xpm": 293.9,
-      "kda": 2.4,
+      "gpm": 289.2,
+      "xpm": 289.5,
+      "kda": 2.2,
       "lane_eff": 1,
-      "hero_pool": 12,
-      "assists": 8.2,
+      "hero_pool": 8,
+      "assists": 7.9,
       "obs_placed": 2,
       "sen_placed": 1,
       "obs_denied": 42,
       "stacks": 1
     },
     "_got_details": true,
-    "_detail": 18
+    "_detail": 10
   },
   {
     "name": "SumaiL",
@@ -2431,15 +2431,15 @@ export const TI_PLAYERS = [
     "ti": "TI5",
     "team": "EG",
     "account_id": 111620041,
-    "matchCount": 27,
+    "matchCount": 23,
     "source": "api",
     "stats": {
-      "gpm": 572.7,
-      "xpm": 605.5,
-      "kda": 4.6,
+      "gpm": 571.4,
+      "xpm": 601,
+      "kda": 4.9,
       "lane_eff": 4,
-      "hero_pool": 8,
-      "assists": 8.2,
+      "hero_pool": 7,
+      "assists": 8.8,
       "obs_placed": 3,
       "sen_placed": 1,
       "obs_denied": 44,
@@ -2447,7 +2447,7 @@ export const TI_PLAYERS = [
       "n": 9459
     },
     "_got_details": true,
-    "_detail": 27
+    "_detail": 23
   },
   {
     "name": "Universe",
@@ -2482,15 +2482,15 @@ export const TI_PLAYERS = [
     "ti": "TI5",
     "team": "EG",
     "account_id": 40547474,
-    "matchCount": 27,
+    "matchCount": 23,
     "source": "api",
     "stats": {
-      "gpm": 322.3,
-      "xpm": 314.5,
-      "kda": 2.7,
+      "gpm": 326.8,
+      "xpm": 317.9,
+      "kda": 2.9,
       "lane_eff": 1,
       "hero_pool": 10,
-      "assists": 6.9,
+      "assists": 7.2,
       "obs_placed": 14,
       "sen_placed": 10,
       "obs_denied": 66,
@@ -2498,7 +2498,7 @@ export const TI_PLAYERS = [
     },
     "_old_id": 90892789,
     "_got_details": true,
-    "_detail": 27
+    "_detail": 23
   },
   {
     "name": "ppd",
@@ -2766,22 +2766,22 @@ export const TI_PLAYERS = [
     "ti": "TI5",
     "team": "Vici Gaming",
     "account_id": 88508515,
-    "matchCount": 24,
+    "matchCount": 20,
     "source": "api",
     "stats": {
-      "gpm": 573,
-      "xpm": 557.2,
-      "kda": 4.8,
+      "gpm": 570,
+      "xpm": 552.4,
+      "kda": 4.6,
       "lane_eff": 3,
       "hero_pool": 12,
-      "assists": 9,
+      "assists": 8.7,
       "obs_placed": 2,
       "sen_placed": 1,
       "obs_denied": 42,
       "stacks": 1
     },
     "_old_id": 86700482,
-    "_detail": 24
+    "_detail": 20
   },
   {
     "name": "Super",
