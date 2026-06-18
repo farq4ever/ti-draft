@@ -516,6 +516,8 @@ function RosterPanel({ roster, score }) {
 // ═══════════════ REVEAL SCREEN ═══════════════
 function RevealScreen({ roster, score, rankInfo, chemistry, onNewGame, onShare, showCard, closeCard, canvasRef, onDownload }) {
   const [step, setStep] = useState(0);
+  const flavorRef = useRef(null);
+  if (!flavorRef.current) flavorRef.current = getFlavorText(score);
   useEffect(() => { const t1=setTimeout(()=>setStep(1),300),t2=setTimeout(()=>setStep(2),900),t3=setTimeout(()=>setStep(3),1600); return ()=>{clearTimeout(t1);clearTimeout(t2);clearTimeout(t3)}; }, []);
   return (
     <div className="max-w-lg mx-auto text-center px-2">
@@ -554,7 +556,7 @@ function RevealScreen({ roster, score, rankInfo, chemistry, onNewGame, onShare, 
             <h2 className="text-lg md:text-2xl font-black italic text-white mt-1 md:mt-2 mb-0.5">{rankInfo?.title||''}</h2>
             <p className="text-white/50 text-[10px] md:text-xs font-bold uppercase tracking-wider mb-3">{rankInfo?.desc||''}</p>
 
-            <div className="border-t border-white/10 pt-4 md:pt-6 mb-5 md:mb-8"><p className="text-white/40 text-[10px] md:text-xs italic leading-relaxed px-2">{getFlavorText(score)}</p></div>
+            <div className="border-t border-white/10 pt-4 md:pt-6 mb-5 md:mb-8"><p className="text-white/40 text-[10px] md:text-xs italic leading-relaxed px-2">{flavorRef.current}</p></div>
             <div className="flex gap-2 justify-center flex-wrap">
               <button onClick={onNewGame} className="bg-white text-black px-8 md:px-10 py-3 md:py-3.5 rounded-full font-black uppercase tracking-[0.15em] text-[10px] md:text-xs hover:scale-105 active:scale-95 transition-all shadow-xl cursor-pointer">再来一局</button>
               <button onClick={onShare} className="bg-white/10 border border-white/20 text-white px-6 py-3 rounded-full font-black uppercase tracking-[0.1em] text-[10px] hover:scale-105 transition-all cursor-pointer flex items-center gap-1.5"><Share2 size={14} />分享</button>
