@@ -259,7 +259,7 @@ const TIS = {
 };
 
 const raw = fs.readFileSync(OUT, 'utf8');
-const pm = raw.match(/export const TI_PLAYERS = (\[[\s\S]*?\]);\n/);
+const pm = raw.match(/export const TI_PLAYERS\s*=\s*(\[[\s\S]*?\]);/);
 if (!pm) { console.error('解析失败'); process.exit(1); }
 const players = JSON.parse(pm[1]);
 const startApi = players.filter(p=>p.source==='api').length;
@@ -384,8 +384,8 @@ async function main() {
   console.log('══════════════════');
 
   const out = raw
-    .replace(/export const TI_PLAYERS = \[[\s\S]*?\];\n/, `export const TI_PLAYERS = ${JSON.stringify(players, null, 2)};\n`)
-    .replace(/export const DATA_SUMMARY = \{[\s\S]*?\};/, `export const DATA_SUMMARY = { total: ${players.length}, api: ${apiCount}, estimated: ${players.length - apiCount} };`);
+    .replace(/export const TI_PLAYERS\s*=\s*\[[\s\S]*?\];/, `export const TI_PLAYERS = ${JSON.stringify(players, null, 2)};`)
+    .replace(/export const DATA_SUMMARY\s*=\s*\{[\s\S]*?\};/, `export const DATA_SUMMARY = { total: ${players.length}, api: ${apiCount}, estimated: ${players.length - apiCount} };`);
   fs.writeFileSync(OUT, out, 'utf8');
   console.log('✅ 写入');
 }
