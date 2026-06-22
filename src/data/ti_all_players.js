@@ -1076,9 +1076,9 @@ export const TI_PLAYERS = [
     ],
     "ti": "TI2",
     "team": "LGD",
-    "account_id": 86700491,
+    "account_id": 114239371,
     "matchCount": 0,
-    "source": "estimated",
+    "source": "api",
     "stats": {
       "gpm": 270,
       "xpm": 345,
@@ -1090,7 +1090,8 @@ export const TI_PLAYERS = [
       "sen_placed": 14,
       "obs_denied": 70,
       "stacks": 4
-    }
+    },
+    "_liqui": true
   },
   {
     "name": "Mushi",
@@ -2353,21 +2354,23 @@ export const TI_PLAYERS = [
     ],
     "ti": "TI4",
     "team": "Cloud9",
-    "account_id": 86700501,
-    "matchCount": 0,
-    "source": "estimated",
+    "account_id": 86799300,
+    "matchCount": 34,
+    "source": "api",
     "stats": {
-      "gpm": 560,
-      "xpm": 640,
-      "kda": 3.7,
+      "gpm": 462.2,
+      "xpm": 478.4,
+      "kda": 3.9,
       "lane_eff": 53,
-      "hero_pool": 14,
-      "assists": 10,
+      "hero_pool": 18,
+      "assists": 9.5,
       "obs_placed": 3,
       "sen_placed": 1,
       "obs_denied": 44,
       "stacks": 2
-    }
+    },
+    "_liqui": true,
+    "_detail": 34
   },
   {
     "name": "Bone7",
@@ -2804,21 +2807,23 @@ export const TI_PLAYERS = [
     ],
     "ti": "TI5",
     "team": "EHOME",
-    "account_id": 86700491,
-    "matchCount": 0,
-    "source": "estimated",
+    "account_id": 114239371,
+    "matchCount": 35,
+    "source": "api",
     "stats": {
-      "gpm": 270,
-      "xpm": 345,
-      "kda": 2.8,
-      "lane_eff": 42,
-      "hero_pool": 20,
-      "assists": 24,
+      "gpm": 258.5,
+      "xpm": 284.5,
+      "kda": 3,
+      "lane_eff": 1,
+      "hero_pool": 12,
+      "assists": 8.4,
       "obs_placed": 18,
       "sen_placed": 14,
       "obs_denied": 70,
       "stacks": 4
-    }
+    },
+    "_liqui": true,
+    "_detail": 35
   },
   {
     "name": "Hao",
@@ -4036,21 +4041,23 @@ export const TI_PLAYERS = [
     ],
     "ti": "TI7",
     "team": "LFY",
-    "account_id": 86700491,
-    "matchCount": 0,
-    "source": "estimated",
+    "account_id": 114239371,
+    "matchCount": 40,
+    "source": "api",
     "stats": {
-      "gpm": 270,
-      "xpm": 345,
-      "kda": 2.8,
-      "lane_eff": 42,
-      "hero_pool": 20,
-      "assists": 24,
-      "obs_placed": 18,
-      "sen_placed": 14,
+      "gpm": 250.3,
+      "xpm": 327.6,
+      "kda": 4.7,
+      "lane_eff": 1,
+      "hero_pool": 12,
+      "assists": 14.3,
+      "obs_placed": 10.3,
+      "sen_placed": 10.2,
       "obs_denied": 70,
-      "stacks": 4
-    }
+      "stacks": 2.6
+    },
+    "_liqui": true,
+    "_detail": 40
   },
   {
     "name": "Ame",
@@ -4132,21 +4139,23 @@ export const TI_PLAYERS = [
     ],
     "ti": "TI7",
     "team": "LGD",
-    "account_id": 149048093,
-    "matchCount": 0,
-    "source": "estimated",
+    "account_id": 107081378,
+    "matchCount": 41,
+    "source": "api",
     "stats": {
-      "gpm": 310,
-      "xpm": 390,
-      "kda": 3.1,
-      "lane_eff": 43,
-      "hero_pool": 22,
-      "assists": 22,
-      "obs_placed": 14,
-      "sen_placed": 10,
+      "gpm": 259,
+      "xpm": 333.1,
+      "kda": 3.5,
+      "lane_eff": 1,
+      "hero_pool": 10,
+      "assists": 14.5,
+      "obs_placed": 7.2,
+      "sen_placed": 6.2,
       "obs_denied": 66,
-      "stacks": 6
-    }
+      "stacks": 1.6
+    },
+    "_liqui": true,
+    "_detail": 41
   },
   {
     "name": "Yao",
@@ -5132,22 +5141,22 @@ export const TI_PLAYERS = [
     "ti": "TI9",
     "team": "Team Liquid",
     "account_id": 101356886,
-    "matchCount": 60,
+    "matchCount": 32,
     "source": "api",
     "stats": {
-      "gpm": 381.9,
-      "xpm": 484.7,
-      "kda": 4.4,
+      "gpm": 311.2,
+      "xpm": 401.3,
+      "kda": 4.1,
       "lane_eff": 2,
-      "hero_pool": 25,
-      "assists": 14.5,
-      "obs_placed": 1.7,
-      "sen_placed": 3.7,
+      "hero_pool": 13,
+      "assists": 14.4,
+      "obs_placed": 1.6,
+      "sen_placed": 4.1,
       "obs_denied": 66,
-      "stacks": 2.9
+      "stacks": 3.6
     },
     "_old_id": 123787592,
-    "_detail": 60
+    "_detail": 32
   },
   {
     "name": "KuroKy",
@@ -5549,21 +5558,21 @@ export const TI_PLAYERS = [
     "ti": "TI10",
     "team": "Team Spirit",
     "account_id": 321580662,
-    "matchCount": 48,
+    "matchCount": 36,
     "source": "api",
     "stats": {
-      "gpm": 703.4,
-      "xpm": 694.3,
+      "gpm": 695.8,
+      "xpm": 688.4,
       "kda": 5.9,
       "lane_eff": 3,
-      "hero_pool": 22,
-      "assists": 7.3,
+      "hero_pool": 21,
+      "assists": 6.6,
       "obs_placed": 1,
       "sen_placed": 1,
       "obs_denied": 42,
       "stacks": 2.4
     },
-    "_detail": 48
+    "_detail": 36
   },
   {
     "name": "TORONTOTOKYO",
@@ -5598,22 +5607,22 @@ export const TI_PLAYERS = [
     "ti": "TI10",
     "team": "Team Spirit",
     "account_id": 302214028,
-    "matchCount": 48,
+    "matchCount": 36,
     "source": "api",
     "stats": {
-      "gpm": 459.5,
-      "xpm": 548.6,
+      "gpm": 444.5,
+      "xpm": 537.1,
       "kda": 3.8,
       "lane_eff": 3,
-      "hero_pool": 14,
-      "assists": 11.4,
+      "hero_pool": 11,
+      "assists": 11.8,
       "obs_placed": 1.3,
-      "sen_placed": 1.6,
+      "sen_placed": 1.7,
       "obs_denied": 52,
-      "stacks": 1.7
+      "stacks": 1.6
     },
     "_old_id": 362219456,
-    "_detail": 48
+    "_detail": 36
   },
   {
     "name": "Mira",
@@ -5624,22 +5633,22 @@ export const TI_PLAYERS = [
     "ti": "TI10",
     "team": "Team Spirit",
     "account_id": 256156323,
-    "matchCount": 48,
+    "matchCount": 36,
     "source": "api",
     "stats": {
-      "gpm": 290.2,
-      "xpm": 434.1,
-      "kda": 3.2,
+      "gpm": 279.4,
+      "xpm": 415.8,
+      "kda": 3.1,
       "lane_eff": 2,
-      "hero_pool": 14,
-      "assists": 12.6,
-      "obs_placed": 4.4,
+      "hero_pool": 11,
+      "assists": 12.5,
+      "obs_placed": 4.2,
       "sen_placed": 8.1,
       "obs_denied": 66,
-      "stacks": 4.1
+      "stacks": 3.8
     },
     "_old_id": 388468439,
-    "_detail": 48
+    "_detail": 36
   },
   {
     "name": "Miposhka",
@@ -5649,22 +5658,22 @@ export const TI_PLAYERS = [
     "ti": "TI10",
     "team": "Team Spirit",
     "account_id": 113331514,
-    "matchCount": 48,
+    "matchCount": 36,
     "source": "api",
     "stats": {
-      "gpm": 276.8,
-      "xpm": 386.5,
-      "kda": 2.8,
-      "lane_eff": 2,
-      "hero_pool": 18,
+      "gpm": 269.9,
+      "xpm": 380,
+      "kda": 2.7,
+      "lane_eff": 1,
+      "hero_pool": 13,
       "assists": 13.1,
-      "obs_placed": 11.4,
-      "sen_placed": 22.3,
+      "obs_placed": 11,
+      "sen_placed": 22,
       "obs_denied": 70,
-      "stacks": 3.3
+      "stacks": 3.5
     },
     "_old_id": 254512171,
-    "_detail": 48
+    "_detail": 36
   },
   {
     "name": "Ame",
@@ -8035,4 +8044,4 @@ export const TI_POOLS = (() => {
   return pools;
 })();
 
-export const DATA_SUMMARY = { total: 325, api: 275, estimated: 50 };
+export const DATA_SUMMARY = { total: 325, api: 280, estimated: 45 };
