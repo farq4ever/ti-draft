@@ -34,7 +34,7 @@ export default function App() {
   const [phase, setPhase] = useState('draft');
   const [rerolls, setRerolls] = useState(2);
   const [errorMsg, setErrorMsg] = useState('');
-  const [swapping, setSwapping] = useState(null); // {name, ti} of player being repositioned
+  const [swapping, setSwapping] = useState(null); // player object being repositioned
   const [history, setHistory] = useState([]);
   const [expandedPlayer, setExpandedPlayer] = useState(null);
   const [mobileTab, setMobileTab] = useState('pool');
@@ -428,7 +428,7 @@ export default function App() {
                 )}
               </div>
               <div className={`lg:col-span-5 ${mobileTab !== 'roster' ? 'hidden md:block' : ''}`}>
-                <RosterPanel roster={roster} score={null} swapping={swapping} onSwapClick={(p) => setSwapping(swapping?.name === p.name ? null : { name: p.name, ti: p.ti })} />
+                <RosterPanel roster={roster} score={null} swapping={swapping} onSwapClick={(p) => setSwapping(swapping?.name === p.name ? null : p)} />
               </div>
             </div>
           </>
@@ -539,13 +539,10 @@ function RosterPanel({ roster, score, swapping, onSwapClick }) {
         {[1,2,3,4,5].map(pos => {
           const player = roster[pos]; const disp = POS_DISPLAY[pos] || [];
           const isSwapping = swapping && player && swapping.name === player.name;
-          const isSwapTarget = swapping && !player;
-          // 取换位中选手的可用位置(不能从空位取)
-          const swapPlayer = swapping ? Object.values(roster).find(p => p?.name === swapping.name) : null;
-          const swapAllowed = swapPlayer ? (Array.isArray(swapPlayer.allowedPos) ? swapPlayer.allowedPos : [swapPlayer.allowedPos]) : [];
-          const isSwapAvailable = isSwapTarget && swapAllowed.includes(pos);
+          const swapAllowed = swapping ? (Array.isArray(swapping.allowedPos) ? swapping.allowedPos : [swapping.allowedPos]) : [];
+          const isSwapAvailable = swapping && !player && swapAllowed.includes(pos);
           return (<div key={pos}
-            onClick={() => { if (player && !swapping) { setExpandedPlayer(null); onSwapClick(player); } else if (isSwapAvailable && swapPlayer) { const newRoster = { ...roster }; const oldPos = Object.entries(roster).find(([op,opd]) => opd?.name === swapping.name); if (oldPos) delete newRoster[oldPos[0]]; newRoster[pos] = swapPlayer; setRoster(newRoster); setSwapping(null); sfx('place'); } }}
+            onClick={() => { if (player && !swapping) { onSwapClick(player); } else if (isSwapAvailable) { const newR = { ...roster }; Object.keys(newR).forEach(k => { if (newR[k]?.name === swapping.name) newR[k] = null; }); newR[pos] = swapping; setRoster(newR); setSwapping(null); sfx('place'); } }}
             className={`rounded-xl md:rounded-2xl border-2 transition-all duration-300 overflow-hidden ${isSwapping ? 'border-amber-400/60 bg-amber-500/[0.08] ring-1 ring-amber-400/30' : isSwapAvailable ? 'border-amber-400/40 border-dashed bg-amber-500/[0.04] cursor-pointer hover:bg-amber-500/[0.08]' : player ? 'border-amber-500/30 bg-amber-500/[0.04] ' + (swapping ? 'opacity-50' : 'cursor-pointer hover:border-amber-400/50') : 'border-dashed border-white/5 bg-white/[0.01]'}`}>
             <div className="flex items-center gap-2 md:gap-3 p-2.5 md:p-3">
               <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm shrink-0 ${isSwapping ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/30' : player ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-900/20' : isSwapAvailable ? 'bg-amber-500/20 text-amber-400' : 'bg-white/5 text-white/15'}`}>{isSwapAvailable ? '?' : pos}</div>
