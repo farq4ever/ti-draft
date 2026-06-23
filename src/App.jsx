@@ -34,6 +34,7 @@ export default function App() {
   const [phase, setPhase] = useState('draft');
   const [rerolls, setRerolls] = useState(2);
   const [errorMsg, setErrorMsg] = useState('');
+  const [swapping, setSwapping] = useState(null); // {name, ti} of player being repositioned
   const [history, setHistory] = useState([]);
   const [expandedPlayer, setExpandedPlayer] = useState(null);
   const [mobileTab, setMobileTab] = useState('pool');
@@ -52,7 +53,7 @@ export default function App() {
     if (phase === 'reveal') return;
     setRound(1); setRoster({ 1: null, 2: null, 3: null, 4: null, 5: null });
     setPhase('draft'); setHistory([]); setExpandedPlayer(null); setRerolls(2);
-    setShowCard(false); setNewAchievements([]);
+    setSwapping(null); setShowCard(false); setNewAchievements([]);
     setPool(pickTeam());
     sfx('click');
   };
@@ -67,21 +68,27 @@ export default function App() {
     if (phase !== 'draft') return;
     const allowed = Array.isArray(player.allowedPos) ? player.allowedPos : [player.allowedPos];
     if (!allowed.includes(pos)) return showError(`${player.name} 不能打 ${pos} 号位`);
-    // 目标位置已有其他选手 → 拒绝
-    if (roster[pos] && roster[pos].name !== player.name) return showError('这个位置已经有人了！');
-    // 该选手已在阵容其他位置 → 移过来 (替换旧位置)
-    const oldPos = Object.entries(roster).find(([p,pData]) => pData?.name === player.name);
-    const isMove = oldPos && parseInt(oldPos[0]) !== pos;
-    sfx('place');
-    const newRoster = { ...roster };
-    if (isMove) delete newRoster[oldPos[0]];
-    newRoster[pos] = player;
-    setRoster(newRoster);
-    setHistory([...history, { round, player, pos, isMove }]);
-    setExpandedPlayer(null);
 
-    // 如果是移动操作(非新选),不推进轮次
-    if (isMove) return;
+    // 如果是换位模式 (点击已入选选手的目标位置)
+    if (swapping && swapping.name === player.name) {
+      const oldPos = Object.entries(roster).find(([p,pData]) => pData?.name === player.name);
+      if (oldPos && parseInt(oldPos[0]) === pos) { setSwapping(null); return; } // 点同一个位置,取消
+      const newRoster = { ...roster };
+      if (oldPos) delete newRoster[oldPos[0]];
+      newRoster[pos] = player;
+      setRoster(newRoster);
+      setSwapping(null);
+      sfx('place');
+      return;
+    }
+
+    // 普通选人
+    if (roster[pos] && roster[pos].name !== player.name) return showError('这个位置已经有人了！');
+    sfx('place');
+    const newRoster = { ...roster, [pos]: player };
+    setRoster(newRoster);
+    setHistory([...history, { round, player, pos }]);
+    setExpandedPlayer(null);
 
     // 如果有隐藏属性，先弹窗揭示
     if (player.traits && player.traits.length > 0) {
@@ -421,7 +428,7 @@ export default function App() {
                 )}
               </div>
               <div className={`lg:col-span-5 ${mobileTab !== 'roster' ? 'hidden md:block' : ''}`}>
-                <RosterPanel roster={roster} score={null} />
+                <RosterPanel roster={roster} score={null} swapping={swapping} onSwapClick={(p) => setSwapping(swapping?.name === p.name ? null : { name: p.name, ti: p.ti })} />
               </div>
             </div>
           </>
@@ -504,11 +511,14 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
             const isOwn = roster[pos]?.name === player.name;
             const isFilled = roster[pos] && !isOwn;
             const canPick = allowed.includes(pos) && !isFilled;
-            const isMove = canPick && isOwn;
+            const isSwappingThis = swapping && swapping.name === player.name;
             let btnClass = 'bg-white/[0.02] text-white/10 cursor-not-allowed';
             let label = String(pos);
             if (isFilled) { btnClass = 'bg-white/5 text-white/15 cursor-not-allowed'; label = '✓'; }
-            else if (isMove) { btnClass = 'bg-gradient-to-b from-sky-500 to-sky-600 text-white hover:from-sky-400 active:scale-95 shadow-lg shadow-sky-900/20 cursor-pointer'; label = '⇄'; }
+            else if (canPick && isSwappingThis) {
+              btnClass = 'bg-gradient-to-b from-amber-400 to-amber-500 text-black font-bold animate-pulse hover:from-amber-300 active:scale-95 shadow-lg shadow-amber-400/40 cursor-pointer';
+              label = player._scores?.[pos] != null ? String(player._scores[pos]) : pos;
+            }
             else if (canPick) { btnClass = 'bg-gradient-to-b from-amber-500 to-amber-600 text-white hover:from-amber-400 active:scale-95 shadow-lg shadow-amber-900/30 cursor-pointer'; }
             return (<button key={pos} onClick={e => { e.stopPropagation(); if (canPick) onPick(player, pos); }} disabled={!canPick}
               className={`flex-1 py-2 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all min-h-[36px] md:min-h-0 ${btnClass}`}>{label}</button>);
@@ -521,20 +531,26 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
 }
 
 // ═══════════════ ROSTER PANEL ═══════════════
-function RosterPanel({ roster, score }) {
+function RosterPanel({ roster, score, swapping, onSwapClick }) {
   return (
     <div className="bg-white/[0.02] border border-white/10 rounded-2xl md:rounded-[2rem] p-3 md:p-5 sticky top-3 md:top-5">
-      <div className="text-center mb-3 md:mb-5"><Shield size={16} className="md:size-5 text-amber-500/40 mx-auto mb-1.5 md:mb-2" /><h2 className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] md:tracking-[0.5em] text-white/20">BP 阵容</h2></div>
+      <div className="text-center mb-3 md:mb-5"><Shield size={16} className="md:size-5 text-amber-500/40 mx-auto mb-1.5 md:mb-2" /><h2 className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] md:tracking-[0.5em] text-white/20">BP 阵容{swapping && <span className="text-amber-400 animate-pulse ml-1">· 换位中</span>}</h2></div>
       <div className="space-y-1.5 md:space-y-2">
         {[1,2,3,4,5].map(pos => {
           const player = roster[pos]; const disp = POS_DISPLAY[pos] || [];
-          return (<div key={pos} className={`rounded-xl md:rounded-2xl border-2 transition-all duration-300 overflow-hidden ${player ? 'border-amber-500/30 bg-amber-500/[0.04]' : 'border-dashed border-white/5 bg-white/[0.01]'}`}>
+          const isSwapping = swapping && player && swapping.name === player.name;
+          const isSwapTarget = swapping && !player; // 空位可以作为换位目标
+          const allowedSwapPos = player ? (Array.isArray(player.allowedPos) ? player.allowedPos : [player.allowedPos]) : [];
+          const isSwapAvailable = isSwapTarget && swapping && allowedSwapPos.includes(pos);
+          return (<div key={pos}
+            onClick={() => { if (player && !swapping) { setExpandedPlayer(null); onSwapClick(player); } else if (isSwapTarget && isSwapAvailable && swapping) { const swapPlayer = Object.values(roster).find(p => p?.name === swapping.name && p?.ti === swapping.ti); if (swapPlayer) { const newRoster = { ...roster }; const oldPos = Object.entries(roster).find(([op,opd]) => opd?.name === swapping.name); if (oldPos) delete newRoster[oldPos[0]]; newRoster[pos] = swapPlayer; setRoster(newRoster); setSwapping(null); sfx('place'); } } }}
+            className={`rounded-xl md:rounded-2xl border-2 transition-all duration-300 overflow-hidden ${isSwapping ? 'border-amber-400/60 bg-amber-500/[0.08] ring-1 ring-amber-400/30' : isSwapAvailable ? 'border-amber-400/40 border-dashed bg-amber-500/[0.04] cursor-pointer hover:bg-amber-500/[0.08]' : player ? 'border-amber-500/30 bg-amber-500/[0.04] ' + (swapping ? 'opacity-50' : 'cursor-pointer hover:border-amber-400/50') : 'border-dashed border-white/5 bg-white/[0.01]'}`}>
             <div className="flex items-center gap-2 md:gap-3 p-2.5 md:p-3">
-              <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm shrink-0 ${player ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-900/20' : 'bg-white/5 text-white/15'}`}>{pos}</div>
-              {player ? (<div className="flex-1 min-w-0"><div className="text-[7px] md:text-[8px] text-white/30 font-black uppercase tracking-wider">{POS_LABELS[pos]}</div><div className="flex items-center gap-1"><span className="text-xs md:text-sm font-black text-white truncate">{player.name}</span>{player.traits?.length > 0 && <span className="text-[9px] shrink-0">✨</span>}</div><div className="text-[8px] md:text-[9px] text-amber-400/60 font-bold truncate">{player.ti} · {player.team}</div>{player.traits?.length > 0 && <div className="flex gap-0.5 mt-0.5 flex-wrap">{player.traits.map(t=><span key={t.id} className="text-[6px] md:text-[7px] bg-purple-600/20 border border-purple-500/20 text-purple-300/80 px-1 py-0.5 rounded-full font-bold">{t.label}</span>)}</div>}</div>) : (<div className="flex-1 text-white/15 text-[10px] md:text-xs font-bold italic">等待英雄...</div>)}
-              {player && <div className="text-amber-400 font-black text-base md:text-lg shrink-0">{playerScore(player, pos)}</div>}
+              <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm shrink-0 ${isSwapping ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/30' : player ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-900/20' : isSwapAvailable ? 'bg-amber-500/20 text-amber-400' : 'bg-white/5 text-white/15'}`}>{isSwapAvailable ? '?' : pos}</div>
+              {player ? (<div className="flex-1 min-w-0"><div className="text-[7px] md:text-[8px] text-white/30 font-black uppercase tracking-wider">{POS_LABELS[pos]}</div><div className="flex items-center gap-1"><span className="text-xs md:text-sm font-black text-white truncate">{player.name}</span>{player.traits?.length > 0 && <span className="text-[9px] shrink-0">✨</span>}</div><div className="text-[8px] md:text-[9px] text-amber-400/60 font-bold truncate">{player.ti} · {player.team}</div>{player.traits?.length > 0 && <div className="flex gap-0.5 mt-0.5 flex-wrap">{player.traits.map(t=><span key={t.id} className="text-[6px] md:text-[7px] bg-purple-600/20 border border-purple-500/20 text-purple-300/80 px-1 py-0.5 rounded-full font-bold">{t.label}</span>)}</div>}</div>) : (<div className="flex-1 text-white/15 text-[10px] md:text-xs font-bold italic">{isSwapAvailable ? '点击换至此位...' : '等待英雄...'}</div>)}
+              {player && <div className={`font-black text-base md:text-lg shrink-0 ${isSwapping ? 'text-amber-300' : 'text-amber-400'}`}>{isSwapping && allowedSwapPos.length > 1 ? allowedSwapPos.map(ap => playerScore(player, ap)).join(' / ') : playerScore(player, pos)}</div>}
             </div>
-            {player && (<div className="px-2.5 md:px-3 pb-2.5 md:pb-3"><div className="grid grid-cols-5 gap-0.5 md:gap-1">{disp.map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1 md:py-1.5"><div className="text-[6px] md:text-[7px] text-white/25 font-black uppercase leading-tight">{l}</div><div className="text-[10px] md:text-[11px] font-mono font-bold text-white/90 mt-0.5">{f(player.stats?.[k] ?? 0)}</div></div>))}</div></div>)}
+            {player && !swapping && (<div className="px-2.5 md:px-3 pb-2.5 md:pb-3"><div className="grid grid-cols-5 gap-0.5 md:gap-1">{disp.map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1 md:py-1.5"><div className="text-[6px] md:text-[7px] text-white/25 font-black uppercase leading-tight">{l}</div><div className="text-[10px] md:text-[11px] font-mono font-bold text-white/90 mt-0.5">{f(player.stats?.[k] ?? 0)}</div></div>))}</div></div>)}
           </div>);
         })}
       </div>
