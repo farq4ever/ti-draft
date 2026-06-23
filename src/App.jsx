@@ -69,26 +69,23 @@ export default function App() {
     const allowed = Array.isArray(player.allowedPos) ? player.allowedPos : [player.allowedPos];
     if (!allowed.includes(pos)) return showError(`${player.name} 不能打 ${pos} 号位`);
 
-    // 如果是换位模式 (点击已入选选手的目标位置)
-    if (swapping && swapping.name === player.name) {
-      const oldPos = Object.entries(roster).find(([p,pData]) => pData?.name === player.name);
-      if (oldPos && parseInt(oldPos[0]) === pos) { setSwapping(null); return; } // 点同一个位置,取消
-      const newRoster = { ...roster };
-      if (oldPos) delete newRoster[oldPos[0]];
-      newRoster[pos] = player;
-      setRoster(newRoster);
-      setSwapping(null);
-      sfx('place');
-      return;
-    }
-
-    // 普通选人
+    // 目标位置有其他人 → 拒绝
     if (roster[pos] && roster[pos].name !== player.name) return showError('这个位置已经有人了！');
+
+    // 如果该选手已在阵容其他位置 → 先清掉旧位置（换位）
+    const newRoster = { ...roster };
+    const oldPos = Object.entries(newRoster).find(([p,pData]) => pData?.name === player.name && pData?.ti === player.ti);
+    const isSwap = oldPos && parseInt(oldPos[0]) !== pos;
+    if (isSwap) delete newRoster[oldPos[0]];
+    newRoster[pos] = player;
     sfx('place');
-    const newRoster = { ...roster, [pos]: player };
     setRoster(newRoster);
-    setHistory([...history, { round, player, pos }]);
+    setSwapping(null);
     setExpandedPlayer(null);
+    setHistory(prev => isSwap ? prev : [...prev, { round, player, pos }]);
+
+    // 如果是换位, 不推进轮次
+    if (isSwap) return;
 
     // 如果有隐藏属性，先弹窗揭示
     if (player.traits && player.traits.length > 0) {
