@@ -414,7 +414,7 @@ export default function App() {
                 </div>
                 <div className="space-y-1.5 md:space-y-2">
                   {pool.players.map((p, i) => (
-                    <PlayerCard key={`${p.name}-${i}`} player={p} roster={roster}
+                    <PlayerCard key={`${p.name}-${i}`} player={p} roster={roster} swapping={swapping}
                       expanded={expandedPlayer === i} onToggle={() => { sfx('pick'); setExpandedPlayer(expandedPlayer === i ? null : i); }}
                       onPick={handlePick} />
                   ))}
@@ -447,7 +447,7 @@ export default function App() {
 }
 
 // ═══════════════ PLAYER CARD ═══════════════
-function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
+function PlayerCard({ player, roster, expanded, onToggle, onPick, swapping }) {
   const allowed = Array.isArray(player.allowedPos) ? player.allowedPos : [player.allowedPos];
   const allBlocked = allowed.every(pos => roster[pos] !== null && roster[pos]?.name !== player.name);
   const used = Object.values(roster).some(r => r?.name === player.name && r?.ti === player.ti);
