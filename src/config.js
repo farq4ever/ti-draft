@@ -1,5 +1,17 @@
-import { TI_PLAYERS, TI_POOLS, POSITION_METRICS } from './data/ti_all_players.js';
-export { TI_PLAYERS, TI_POOLS, POSITION_METRICS };
+import { TI_PLAYERS as _TI_PLAYERS, TI_POOLS as _TI_POOLS, POSITION_METRICS } from './data/ti_all_players.js';
+
+// 隐藏TI1 (OpenDota无2011年数据)
+export const TI_PLAYERS = _TI_PLAYERS.filter(p => p.ti !== 'TI1');
+export const TI_POOLS = (() => {
+  const pools = {};
+  TI_PLAYERS.forEach(p => {
+    const key = p.team + '__' + p.ti;
+    if (!pools[key]) pools[key] = { team: p.team, ti: p.ti, players: [] };
+    pools[key].players.push(p);
+  });
+  return pools;
+})();
+export { POSITION_METRICS };
 
 export const DIMINISHING_WEIGHTS = [1.0, 0.75, 0.55, 0.40, 0.30];
 
