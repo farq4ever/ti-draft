@@ -65,14 +65,23 @@ export default function App() {
 
   const handlePick = (player, pos) => {
     if (phase !== 'draft') return;
-    if (roster[pos]) return showError('这个位置已经有人了！');
     const allowed = Array.isArray(player.allowedPos) ? player.allowedPos : [player.allowedPos];
     if (!allowed.includes(pos)) return showError(`${player.name} 不能打 ${pos} 号位`);
+    // 目标位置已有其他选手 → 拒绝
+    if (roster[pos] && roster[pos].name !== player.name) return showError('这个位置已经有人了！');
+    // 该选手已在阵容其他位置 → 移过来 (替换旧位置)
+    const oldPos = Object.entries(roster).find(([p,pData]) => pData?.name === player.name);
+    const isMove = oldPos && parseInt(oldPos[0]) !== pos;
     sfx('place');
-    const newRoster = { ...roster, [pos]: player };
+    const newRoster = { ...roster };
+    if (isMove) delete newRoster[oldPos[0]];
+    newRoster[pos] = player;
     setRoster(newRoster);
-    setHistory([...history, { round, player, pos }]);
+    setHistory([...history, { round, player, pos, isMove }]);
     setExpandedPlayer(null);
+
+    // 如果是移动操作(非新选),不推进轮次
+    if (isMove) return;
 
     // 如果有隐藏属性，先弹窗揭示
     if (player.traits && player.traits.length > 0) {
@@ -433,9 +442,9 @@ export default function App() {
 // ═══════════════ PLAYER CARD ═══════════════
 function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
   const allowed = Array.isArray(player.allowedPos) ? player.allowedPos : [player.allowedPos];
-  const allBlocked = allowed.every(pos => roster[pos] !== null);
+  const allBlocked = allowed.every(pos => roster[pos] !== null && roster[pos]?.name !== player.name);
   const used = Object.values(roster).some(r => r?.name === player.name && r?.ti === player.ti);
-  const unavailable = used || allBlocked;
+  const unavailable = allBlocked && !used;
   const primary = allowed[0];
   const display = POS_DISPLAY[primary] || [];
   const hasTrait = player.traits && player.traits.length > 0;
@@ -453,17 +462,17 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
           </div>
           <div className="flex gap-0.5 md:gap-1 mt-0.5">
             {allowed.map(ap => (
-              <span key={ap} className={`text-[7px] md:text-[8px] font-black px-1 md:px-1.5 py-0.5 rounded-md uppercase ${roster[ap] ? 'bg-white/5 text-white/15 line-through' : ap === primary ? 'bg-amber-600/20 text-amber-400' : 'bg-white/5 text-white/30'}`}>{POS_LABELS[ap]}</span>
+              <span key={ap} className={`text-[7px] md:text-[8px] font-black px-1 md:px-1.5 py-0.5 rounded-md uppercase tracking-wider ${roster[ap] ? 'bg-white/5 text-white/15 line-through' : 'bg-amber-500/15 text-amber-400 border border-amber-500/20'}`}>{POS_LABELS[ap]}</span>
             ))}
           </div>
         </div>
-        <div className="text-center shrink-0">
+        <div className="text-right shrink-0 min-w-[60px]">
           {player._scores && Object.keys(player._scores).length > 1 ? (
-            <div className="flex gap-0.5">
-              {Object.entries(player._scores).slice(0,3).map(([pos,sc]) => (
-                <div key={pos} className="text-center">
-                  <div className="text-[8px] text-white/30 font-black">{POS_LABELS[pos]?.slice(0,2)}</div>
-                  <div className={`text-xs font-black italic ${unavailable ? 'text-white/20' : 'text-amber-400'}`}>{sc}</div>
+            <div className="space-y-0.5">
+              {Object.entries(player._scores).map(([pos,sc]) => (
+                <div key={pos} className={`flex items-center gap-1.5 ${roster[pos] ? 'opacity-20' : ''}`}>
+                  <span className={`text-[9px] font-black tracking-wider ${roster[pos] ? 'text-white/15' : 'text-amber-400'}`}>{POS_LABELS[pos]?.slice(0,2)}</span>
+                  <span className={`text-sm font-black italic ${roster[pos] ? 'text-white/15' : scoreDiff > 0 ? 'text-green-400' : 'text-amber-400'}`}>{sc}</span>
                 </div>
               ))}
             </div>
@@ -492,9 +501,17 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
             <div className="grid grid-cols-5 gap-0.5 md:gap-1 mb-2 md:mb-3">{display.map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1 md:py-1.5"><div className="text-[6px] md:text-[7px] text-white/30 font-black uppercase">{l}</div><div className="text-[10px] md:text-[11px] font-mono font-bold text-white">{f(player.stats?.[k] ?? 0)}</div></div>))}</div>
           )}
           <div className="flex gap-0.5 md:gap-1">{[1,2,3,4,5].map(pos => {
-            const canPick = allowed.includes(pos) && !roster[pos]; const filled = roster[pos];
+            const isOwn = roster[pos]?.name === player.name;
+            const isFilled = roster[pos] && !isOwn;
+            const canPick = allowed.includes(pos) && !isFilled;
+            const isMove = canPick && isOwn;
+            let btnClass = 'bg-white/[0.02] text-white/10 cursor-not-allowed';
+            let label = String(pos);
+            if (isFilled) { btnClass = 'bg-white/5 text-white/15 cursor-not-allowed'; label = '✓'; }
+            else if (isMove) { btnClass = 'bg-gradient-to-b from-sky-500 to-sky-600 text-white hover:from-sky-400 active:scale-95 shadow-lg shadow-sky-900/20 cursor-pointer'; label = '⇄'; }
+            else if (canPick) { btnClass = 'bg-gradient-to-b from-amber-500 to-amber-600 text-white hover:from-amber-400 active:scale-95 shadow-lg shadow-amber-900/30 cursor-pointer'; }
             return (<button key={pos} onClick={e => { e.stopPropagation(); if (canPick) onPick(player, pos); }} disabled={!canPick}
-              className={`flex-1 py-2 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all min-h-[36px] md:min-h-0 ${canPick ? 'bg-gradient-to-b from-amber-500 to-amber-600 text-white hover:from-amber-400 active:scale-95 shadow-lg shadow-amber-900/30 cursor-pointer' : filled ? 'bg-white/5 text-white/15 cursor-not-allowed' : 'bg-white/[0.02] text-white/10 cursor-not-allowed'}`}>{filled ? '✓' : pos}</button>);
+              className={`flex-1 py-2 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all min-h-[36px] md:min-h-0 ${btnClass}`}>{label}</button>);
           })}</div>
         </div>
       )}
