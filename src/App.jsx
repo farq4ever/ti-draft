@@ -423,7 +423,7 @@ export default function App() {
                 )}
               </div>
               <div className={`lg:col-span-5 ${mobileTab !== 'roster' ? 'hidden md:block' : ''}`}>
-                <RosterPanel roster={roster} score={null} />
+                <RosterPanel roster={roster} score={null} onPick={handlePick} />
               </div>
             </div>
           </>
@@ -525,18 +525,29 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
 }
 
 // ═══════════════ ROSTER PANEL ═══════════════
-function RosterPanel({ roster, score }) {
+function RosterPanel({ roster, score, onPick }) {
   return (
     <div className="bg-white/[0.02] border border-white/10 rounded-2xl md:rounded-[2rem] p-3 md:p-5 sticky top-3 md:top-5">
       <div className="text-center mb-3 md:mb-5"><Shield size={16} className="md:size-5 text-amber-500/40 mx-auto mb-1.5 md:mb-2" /><h2 className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] md:tracking-[0.5em] text-white/20">BP 阵容</h2></div>
       <div className="space-y-1.5 md:space-y-2">
         {[1,2,3,4,5].map(pos => {
           const player = roster[pos]; const disp = POS_DISPLAY[pos] || [];
+          // 空位时查找其他位置可移入的选手
+          const movable = !player ? Object.entries(roster).filter(([op,opData]) => {
+            if (!opData || parseInt(op) === pos) return false;
+            const allowed = Array.isArray(opData.allowedPos) ? opData.allowedPos : [opData.allowedPos];
+            return allowed.includes(pos);
+          }).map(([op,opData]) => ({fromPos: parseInt(op), player: opData, score: playerScore(opData, pos)})) : [];
           return (<div key={pos}
-            className={`rounded-xl md:rounded-2xl border-2 transition-all duration-300 overflow-hidden ${player ? 'border-amber-500/30 bg-amber-500/[0.04]' : 'border-dashed border-white/5 bg-white/[0.01]'}`}>
+            className={`rounded-xl md:rounded-2xl border-2 transition-all duration-300 overflow-hidden ${player ? 'border-amber-500/30 bg-amber-500/[0.04]' : movable.length > 0 ? 'border-amber-400/30 border-dashed bg-amber-500/[0.02]' : 'border-dashed border-white/5 bg-white/[0.01]'}`}>
             <div className="flex items-center gap-2 md:gap-3 p-2.5 md:p-3">
               <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm shrink-0 ${player ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-900/20' : 'bg-white/5 text-white/15'}`}>{pos}</div>
-              {player ? (<div className="flex-1 min-w-0"><div className="text-[7px] md:text-[8px] text-white/30 font-black uppercase tracking-wider">{POS_LABELS[pos]}</div><div className="flex items-center gap-1"><span className="text-xs md:text-sm font-black text-white truncate">{player.name}</span>{player.traits?.length > 0 && <span className="text-[9px] shrink-0">✨</span>}</div><div className="text-[8px] md:text-[9px] text-amber-400/60 font-bold truncate">{player.ti} · {player.team}</div>{player.traits?.length > 0 && <div className="flex gap-0.5 mt-0.5 flex-wrap">{player.traits.map(t=><span key={t.id} className="text-[6px] md:text-[7px] bg-purple-600/20 border border-purple-500/20 text-purple-300/80 px-1 py-0.5 rounded-full font-bold">{t.label}</span>)}</div>}</div>) : (<div className="flex-1 text-white/15 text-[10px] md:text-xs font-bold italic">等待英雄...</div>)}
+              {player ? (<div className="flex-1 min-w-0"><div className="text-[7px] md:text-[8px] text-white/30 font-black uppercase tracking-wider">{POS_LABELS[pos]}</div><div className="flex items-center gap-1"><span className="text-xs md:text-sm font-black text-white truncate">{player.name}</span>{player.traits?.length > 0 && <span className="text-[9px] shrink-0">✨</span>}</div><div className="text-[8px] md:text-[9px] text-amber-400/60 font-bold truncate">{player.ti} · {player.team}</div>{player.traits?.length > 0 && <div className="flex gap-0.5 mt-0.5 flex-wrap">{player.traits.map(t=><span key={t.id} className="text-[6px] md:text-[7px] bg-purple-600/20 border border-purple-500/20 text-purple-300/80 px-1 py-0.5 rounded-full font-bold">{t.label}</span>)}</div>}</div>) : (<div className="flex-1 min-w-0">{movable.length > 0 ? movable.map(m => (<button key={m.fromPos} onClick={(e) => { e.stopPropagation(); onPick(m.player, pos); }}
+                className="block w-full text-left text-[9px] md:text-[10px] bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-lg px-2 py-1 mb-0.5 transition-all cursor-pointer">
+                <span className="text-amber-400 font-black">↗ {m.player.name}</span>
+                <span className="text-white/40 text-[7px] ml-1">从{POS_LABELS[m.fromPos]}</span>
+                <span className="float-right text-amber-400 font-black text-xs">{m.score}</span>
+              </button>)) : (<span className="text-white/15 text-[10px] md:text-xs font-bold italic">等待英雄...</span>)}</div>)}
               {player && <div className="text-amber-400 font-black text-base md:text-lg shrink-0">{playerScore(player, pos)}</div>}
             </div>
             {player && (<div className="px-2.5 md:px-3 pb-2.5 md:pb-3"><div className="grid grid-cols-5 gap-0.5 md:gap-1">{disp.map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1 md:py-1.5"><div className="text-[6px] md:text-[7px] text-white/25 font-black uppercase leading-tight">{l}</div><div className="text-[10px] md:text-[11px] font-mono font-bold text-white/90 mt-0.5">{f(player.stats?.[k] ?? 0)}</div></div>))}</div></div>)}

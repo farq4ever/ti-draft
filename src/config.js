@@ -16,12 +16,13 @@ export { POSITION_METRICS };
 export const DIMINISHING_WEIGHTS = [1.0, 0.75, 0.55, 0.40, 0.30];
 
 // 满分基准
+// 评分基准 (调整到生涯均值水平, 适配现有数据)
 export const BENCHMARKS = {
-  1: { gpm: 750, xpm: 800, kda: 6.0, lane_eff: 65, hero_pool: 20 },
-  2: { gpm: 680, kda: 6.0, xpm: 750, hero_pool: 25, lane_eff: 60 },
-  3: { kda: 4.5, stacks: 12, lane_eff: 55, gpm: 520, assists: 22 },
-  4: { assists: 28, sen_placed: 16, obs_denied: 80, stacks: 14, kda: 4.0 },
-  5: { sen_placed: 18, obs_placed: 22, obs_denied: 80, assists: 30, lane_eff: 55 },
+  1: { gpm: 620, xpm: 680, kda: 5.0, lane_eff: 55, hero_pool: 14 },
+  2: { gpm: 580, kda: 4.5, xpm: 650, hero_pool: 16, lane_eff: 55 },
+  3: { kda: 3.8, stacks: 8, lane_eff: 48, gpm: 460, assists: 18 },
+  4: { assists: 22, sen_placed: 14, obs_denied: 65, stacks: 10, kda: 3.5 },
+  5: { sen_placed: 16, obs_placed: 18, obs_denied: 65, assists: 24, lane_eff: 50 },
 };
 
 // 位置标签
