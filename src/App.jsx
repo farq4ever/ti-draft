@@ -34,7 +34,6 @@ export default function App() {
   const [phase, setPhase] = useState('draft');
   const [rerolls, setRerolls] = useState(2);
   const [errorMsg, setErrorMsg] = useState('');
-  const [swapping, setSwapping] = useState(null); // player object being repositioned
   const [history, setHistory] = useState([]);
   const [expandedPlayer, setExpandedPlayer] = useState(null);
   const [mobileTab, setMobileTab] = useState('pool');
@@ -53,7 +52,7 @@ export default function App() {
     if (phase === 'reveal') return;
     setRound(1); setRoster({ 1: null, 2: null, 3: null, 4: null, 5: null });
     setPhase('draft'); setHistory([]); setExpandedPlayer(null); setRerolls(2);
-    setSwapping(null); setShowCard(false); setNewAchievements([]);
+    setShowCard(false); setNewAchievements([]);
     setPool(pickTeam());
     sfx('click');
   };
@@ -80,7 +79,6 @@ export default function App() {
     newRoster[pos] = player;
     sfx('place');
     setRoster(newRoster);
-    setSwapping(null);
     setExpandedPlayer(null);
     setHistory(prev => isSwap ? prev : [...prev, { round, player, pos }]);
 
@@ -411,8 +409,8 @@ export default function App() {
                 </div>
                 <div className="space-y-1.5 md:space-y-2">
                   {pool.players.map((p, i) => (
-                    <PlayerCard key={`${p.name}-${i}`} player={p} roster={roster} swapping={swapping}
-                      expanded={expandedPlayer === i || (swapping && swapping.name === p.name && swapping.ti === p.ti)} onToggle={() => { sfx('pick'); setExpandedPlayer(expandedPlayer === i ? null : i); }}
+                    <PlayerCard key={`${p.name}-${i}`} player={p} roster={roster}
+                      expanded={expandedPlayer === i} onToggle={() => { sfx('pick'); setExpandedPlayer(expandedPlayer === i ? null : i); }}
                       onPick={handlePick} />
                   ))}
                 </div>
@@ -425,7 +423,7 @@ export default function App() {
                 )}
               </div>
               <div className={`lg:col-span-5 ${mobileTab !== 'roster' ? 'hidden md:block' : ''}`}>
-                <RosterPanel roster={roster} score={null} swapping={swapping} onSwapClick={(p) => setSwapping(swapping?.name === p.name ? null : p)} />
+                <RosterPanel roster={roster} score={null} />
               </div>
             </div>
           </>
@@ -444,7 +442,7 @@ export default function App() {
 }
 
 // ═══════════════ PLAYER CARD ═══════════════
-function PlayerCard({ player, roster, expanded, onToggle, onPick, swapping }) {
+function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
   const allowed = Array.isArray(player.allowedPos) ? player.allowedPos : [player.allowedPos];
   const allBlocked = allowed.every(pos => roster[pos] !== null && roster[pos]?.name !== player.name);
   const used = Object.values(roster).some(r => r?.name === player.name && r?.ti === player.ti);
@@ -506,16 +504,15 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick, swapping }) {
           )}
           <div className="flex gap-0.5 md:gap-1">{[1,2,3,4,5].map(pos => {
             const isOwn = roster[pos]?.name === player.name;
-            const isFilled = roster[pos] && !isOwn;
-            const canPick = allowed.includes(pos) && !isFilled;
-            const isSwappingThis = swapping && swapping.name === player.name;
+            const isFilledOther = roster[pos] && !isOwn;
+            const alreadyInRoster = Object.values(roster).some(r => r?.name === player.name && r?.ti === player.ti);
+            const canPick = allowed.includes(pos) && !isFilledOther;
+            const isSwapTarget = canPick && alreadyInRoster && !isOwn;
             let btnClass = 'bg-white/[0.02] text-white/10 cursor-not-allowed';
             let label = String(pos);
-            if (isFilled) { btnClass = 'bg-white/5 text-white/15 cursor-not-allowed'; label = '✓'; }
-            else if (canPick && isSwappingThis) {
-              btnClass = 'bg-gradient-to-b from-amber-400 to-amber-500 text-black font-bold animate-pulse hover:from-amber-300 active:scale-95 shadow-lg shadow-amber-400/40 cursor-pointer';
-              label = player._scores?.[pos] != null ? String(player._scores[pos]) : pos;
-            }
+            if (isFilledOther) { btnClass = 'bg-white/5 text-white/15 cursor-not-allowed'; label = '✓'; }
+            else if (isOwn) { btnClass = 'bg-amber-500/20 text-amber-400 cursor-default'; label = '●'; }
+            else if (isSwapTarget) { btnClass = 'bg-gradient-to-b from-amber-400 to-amber-500 text-black font-bold hover:from-amber-300 active:scale-95 shadow-lg shadow-amber-400/40 cursor-pointer'; label = player._scores?.[pos] != null ? String(player._scores[pos]) : '↗'; }
             else if (canPick) { btnClass = 'bg-gradient-to-b from-amber-500 to-amber-600 text-white hover:from-amber-400 active:scale-95 shadow-lg shadow-amber-900/30 cursor-pointer'; }
             return (<button key={pos} onClick={e => { e.stopPropagation(); if (canPick) onPick(player, pos); }} disabled={!canPick}
               className={`flex-1 py-2 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all min-h-[36px] md:min-h-0 ${btnClass}`}>{label}</button>);
@@ -528,25 +525,21 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick, swapping }) {
 }
 
 // ═══════════════ ROSTER PANEL ═══════════════
-function RosterPanel({ roster, score, swapping, onSwapClick }) {
+function RosterPanel({ roster, score }) {
   return (
     <div className="bg-white/[0.02] border border-white/10 rounded-2xl md:rounded-[2rem] p-3 md:p-5 sticky top-3 md:top-5">
-      <div className="text-center mb-3 md:mb-5"><Shield size={16} className="md:size-5 text-amber-500/40 mx-auto mb-1.5 md:mb-2" /><h2 className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] md:tracking-[0.5em] text-white/20">BP 阵容{swapping && <span className="text-amber-400 animate-pulse ml-1">· 换位中</span>}</h2></div>
+      <div className="text-center mb-3 md:mb-5"><Shield size={16} className="md:size-5 text-amber-500/40 mx-auto mb-1.5 md:mb-2" /><h2 className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] md:tracking-[0.5em] text-white/20">BP 阵容</h2></div>
       <div className="space-y-1.5 md:space-y-2">
         {[1,2,3,4,5].map(pos => {
           const player = roster[pos]; const disp = POS_DISPLAY[pos] || [];
-          const isSwapping = swapping && player && swapping.name === player.name;
-          const swapAllowed = swapping ? (Array.isArray(swapping.allowedPos) ? swapping.allowedPos : [swapping.allowedPos]) : [];
-          const isSwapAvailable = swapping && !player && swapAllowed.includes(pos);
           return (<div key={pos}
-            onClick={() => { if (player && !swapping) onSwapClick(player); }}
-            className={`rounded-xl md:rounded-2xl border-2 transition-all duration-300 overflow-hidden ${isSwapping ? 'border-amber-400/60 bg-amber-500/[0.08] ring-1 ring-amber-400/30 scale-[1.02]' : isSwapAvailable ? 'border-amber-400/40 border-dashed bg-amber-500/[0.04]' : player ? 'border-amber-500/30 bg-amber-500/[0.04] ' + (swapping ? 'opacity-50' : 'cursor-pointer hover:border-amber-400/50') : 'border-dashed border-white/5 bg-white/[0.01]'}`}>
+            className={`rounded-xl md:rounded-2xl border-2 transition-all duration-300 overflow-hidden ${player ? 'border-amber-500/30 bg-amber-500/[0.04]' : 'border-dashed border-white/5 bg-white/[0.01]'}`}>
             <div className="flex items-center gap-2 md:gap-3 p-2.5 md:p-3">
-              <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm shrink-0 ${isSwapping ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/30' : player ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-900/20' : isSwapAvailable ? 'bg-amber-500/20 text-amber-400' : 'bg-white/5 text-white/15'}`}>{isSwapAvailable ? '?' : pos}</div>
-              {player ? (<div className="flex-1 min-w-0"><div className="text-[7px] md:text-[8px] text-white/30 font-black uppercase tracking-wider">{POS_LABELS[pos]}</div><div className="flex items-center gap-1"><span className="text-xs md:text-sm font-black text-white truncate">{player.name}</span>{player.traits?.length > 0 && <span className="text-[9px] shrink-0">✨</span>}</div><div className="text-[8px] md:text-[9px] text-amber-400/60 font-bold truncate">{player.ti} · {player.team}</div>{player.traits?.length > 0 && <div className="flex gap-0.5 mt-0.5 flex-wrap">{player.traits.map(t=><span key={t.id} className="text-[6px] md:text-[7px] bg-purple-600/20 border border-purple-500/20 text-purple-300/80 px-1 py-0.5 rounded-full font-bold">{t.label}</span>)}</div>}</div>) : (<div className="flex-1 text-white/15 text-[10px] md:text-xs font-bold italic">{isSwapAvailable ? '← 点下方卡片按钮换至此处' : '等待英雄...'}</div>)}
-              {player && <div className={`font-black text-base md:text-lg shrink-0 ${isSwapping ? 'text-amber-300' : 'text-amber-400'}`}>{isSwapping && swapAllowed.length > 1 ? swapAllowed.map(ap => playerScore(player, ap)).join(' / ') : playerScore(player, pos)}</div>}
+              <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm shrink-0 ${player ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-900/20' : 'bg-white/5 text-white/15'}`}>{pos}</div>
+              {player ? (<div className="flex-1 min-w-0"><div className="text-[7px] md:text-[8px] text-white/30 font-black uppercase tracking-wider">{POS_LABELS[pos]}</div><div className="flex items-center gap-1"><span className="text-xs md:text-sm font-black text-white truncate">{player.name}</span>{player.traits?.length > 0 && <span className="text-[9px] shrink-0">✨</span>}</div><div className="text-[8px] md:text-[9px] text-amber-400/60 font-bold truncate">{player.ti} · {player.team}</div>{player.traits?.length > 0 && <div className="flex gap-0.5 mt-0.5 flex-wrap">{player.traits.map(t=><span key={t.id} className="text-[6px] md:text-[7px] bg-purple-600/20 border border-purple-500/20 text-purple-300/80 px-1 py-0.5 rounded-full font-bold">{t.label}</span>)}</div>}</div>) : (<div className="flex-1 text-white/15 text-[10px] md:text-xs font-bold italic">等待英雄...</div>)}
+              {player && <div className="text-amber-400 font-black text-base md:text-lg shrink-0">{playerScore(player, pos)}</div>}
             </div>
-            {player && !swapping && (<div className="px-2.5 md:px-3 pb-2.5 md:pb-3"><div className="grid grid-cols-5 gap-0.5 md:gap-1">{disp.map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1 md:py-1.5"><div className="text-[6px] md:text-[7px] text-white/25 font-black uppercase leading-tight">{l}</div><div className="text-[10px] md:text-[11px] font-mono font-bold text-white/90 mt-0.5">{f(player.stats?.[k] ?? 0)}</div></div>))}</div></div>)}
+            {player && (<div className="px-2.5 md:px-3 pb-2.5 md:pb-3"><div className="grid grid-cols-5 gap-0.5 md:gap-1">{disp.map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1 md:py-1.5"><div className="text-[6px] md:text-[7px] text-white/25 font-black uppercase leading-tight">{l}</div><div className="text-[10px] md:text-[11px] font-mono font-bold text-white/90 mt-0.5">{f(player.stats?.[k] ?? 0)}</div></div>))}</div></div>)}
           </div>);
         })}
       </div>
