@@ -8,14 +8,17 @@ function pickTeam() {
   const key = POOL_KEYS[Math.floor(Math.random() * POOL_KEYS.length)];
   const td = TI_POOLS[key];
   const players = assignHiddenTraits(td.players.map(p => {
-    const primary = Array.isArray(p.allowedPos) ? p.allowedPos[0] : p.allowedPos;
-    return { ...p, score: playerScore(p, primary) };
+    const allowed = Array.isArray(p.allowedPos) ? p.allowedPos : [p.allowedPos];
+    const scores = {};
+    allowed.forEach(pos => { scores[pos] = playerScore(p, pos); });
+    const primary = allowed[0];
+    return { ...p, score: scores[primary], _scores: scores };
   }));
   return { ...td, players };
 }
 
 function fireConfetti() {
-  const colors = ['#ff6600','#ff9900','#ffcc00','#ffffff','#ff3300'];
+  const colors = ['#f59e0b','#fbbf24','#fcd34d','#ffffff','#fef3c7'];
   for (let i = 0; i < 80; i++) {
     const el = document.createElement('div');
     el.style.cssText = `position:fixed;width:8px;height:8px;background:${colors[i%5]};left:${Math.random()*100}%;top:-10px;border-radius:2px;z-index:9999;pointer-events:none;animation:confettiFall ${1+Math.random()*2}s ease-out forwards;animation-delay:${Math.random()*0.5}s`;
@@ -175,7 +178,7 @@ export default function App() {
       ctx.fillText(myScore, cx, cy + 14);
 
       // Rank title
-      const rankColor = rankInfo?.bg?.includes('yellow') ? '#facc15' : rankInfo?.bg?.includes('slate') ? '#cbd5e1' : rankInfo?.bg?.includes('orange') ? '#fb923c' : rankInfo?.bg?.includes('purple') ? '#c084fc' : rankInfo?.bg?.includes('blue') ? '#60a5fa' : '#64748b';
+      const rankColor = rankInfo?.bg?.includes('yellow') ? '#facc15' : rankInfo?.bg?.includes('slate') ? '#cbd5e1' : rankInfo?.bg?.includes('orange') ? '#f59e0b' : rankInfo?.bg?.includes('purple') ? '#c084fc' : rankInfo?.bg?.includes('blue') ? '#60a5fa' : '#64748b';
       ctx.fillStyle = rankColor; ctx.font = 'bold 16px sans-serif';
       ctx.fillText(rankInfo?.title || '', cx, cy + r + 28);
       if (chemistry > 0) {
@@ -276,11 +279,11 @@ export default function App() {
   const refreshAch = () => setStoredAch(loadAchievements());
 
   return (
-    <div className="min-h-screen bg-[#06080d] text-slate-200 selection:bg-orange-600/40">
+    <div className="min-h-screen bg-gradient-to-b from-[#0a0e18] via-[#0f111d] to-[#0b0d16] text-slate-200 selection:bg-amber-500/30">
       <style>{`@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}@keyframes cardReveal{0%{transform:rotateY(90deg);opacity:0}100%{transform:rotateY(0);opacity:1}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}@keyframes slideUp{0%{transform:translateY(20px);opacity:0}100%{transform:translateY(0);opacity:1}}`}</style>
-      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-20">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-600/20 rounded-full blur-[128px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-amber-500/10 rounded-full blur-[96px]" />
+      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-15">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/20 rounded-full blur-[128px]" />
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-yellow-600/10 rounded-full blur-[100px]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-3 py-3 md:px-4 md:py-5 relative z-10">
@@ -288,13 +291,13 @@ export default function App() {
         <header className="flex flex-wrap items-center justify-between gap-2 mb-3 md:mb-5">
           <div className="flex items-center gap-2 md:gap-3">
             <div className="relative">
-              <div className="absolute inset-0 bg-orange-500 blur-md rounded-xl md:rounded-2xl opacity-40" />
-              <div className="relative bg-gradient-to-br from-orange-500 to-red-600 p-2 md:p-2.5 rounded-xl md:rounded-2xl shadow-xl">
+              <div className="absolute inset-0 bg-amber-500 blur-md rounded-xl md:rounded-2xl opacity-40" />
+              <div className="relative bg-gradient-to-br from-amber-500 to-red-600 p-2 md:p-2.5 rounded-xl md:rounded-2xl shadow-xl">
                 <Trophy size={22} className="md:size-7 text-white" fill="rgba(255,255,255,0.2)" />
               </div>
             </div>
             <div>
-              <h1 className="text-base md:text-2xl font-black italic tracking-tight text-white">举<span className="text-orange-500">盾</span></h1>
+              <h1 className="text-base md:text-2xl font-black italic tracking-tight text-white">举<span className="text-amber-500">盾</span></h1>
               <p className="text-[8px] md:text-[10px] text-slate-500 font-bold tracking-[0.15em] uppercase">
                 {phase === 'draft' ? `第 ${round}/5 轮选秀` : '最终阵容'}
               </p>
@@ -384,13 +387,13 @@ export default function App() {
         {phase === 'draft' && (
           <>
             <div className="flex md:hidden gap-1 mb-3">
-              <button onClick={() => setMobileTab('pool')} className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase ${mobileTab === 'pool' ? 'bg-orange-600 text-white' : 'bg-white/5 text-white/30'}`}>🃏 选人({6-round}轮)</button>
-              <button onClick={() => setMobileTab('roster')} className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase ${mobileTab === 'roster' ? 'bg-orange-600 text-white' : 'bg-white/5 text-white/30'}`}>🛡 阵容({Object.values(roster).filter(Boolean).length}/5)</button>
+              <button onClick={() => setMobileTab('pool')} className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase ${mobileTab === 'pool' ? 'bg-amber-600 text-white' : 'bg-white/5 text-white/30'}`}>🃏 选人({6-round}轮)</button>
+              <button onClick={() => setMobileTab('roster')} className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase ${mobileTab === 'roster' ? 'bg-amber-600 text-white' : 'bg-white/5 text-white/30'}`}>🛡 阵容({Object.values(roster).filter(Boolean).length}/5)</button>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-5">
               <div className={`lg:col-span-7 ${mobileTab !== 'pool' ? 'hidden md:block' : ''}`}>
                 <div className="hidden md:flex items-center gap-2 mb-3">
-                  <div className="w-1.5 h-5 bg-orange-500 rounded-full" /><h2 className="text-sm font-black uppercase tracking-widest text-slate-400">可选队员</h2>
+                  <div className="w-1.5 h-5 bg-amber-500 rounded-full" /><h2 className="text-sm font-black uppercase tracking-widest text-slate-400">可选队员</h2>
                   <span className="text-[10px] text-slate-600 ml-2">还剩 {6 - round} 次选择</span>
                 </div>
                 <div className="space-y-1.5 md:space-y-2">
@@ -403,7 +406,7 @@ export default function App() {
                 {history.length > 0 && (
                   <div className="mt-3 flex gap-1 flex-wrap">
                     {history.map((h, i) => (
-                      <span key={i} className="text-[9px] md:text-[10px] bg-white/5 border border-white/10 px-2 py-0.5 md:py-1 rounded-lg font-bold text-slate-400">R{h.round} <span className="text-orange-400">{h.player.name}</span> → {h.pos}</span>
+                      <span key={i} className="text-[9px] md:text-[10px] bg-white/5 border border-white/10 px-2 py-0.5 md:py-1 rounded-lg font-bold text-slate-400">R{h.round} <span className="text-amber-400">{h.player.name}</span> → {h.pos}</span>
                     ))}
                   </div>
                 )}
@@ -439,10 +442,10 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
   const scoreDiff = player._originalScore ? player.score - player._originalScore : 0;
 
   return (
-    <div className={`rounded-xl md:rounded-2xl border transition-all duration-300 ${unavailable ? 'bg-white/[0.02] border-white/5 opacity-30' : 'bg-white/[0.03] border-white/10 hover:border-orange-500/30 hover:bg-white/[0.05] cursor-pointer'}`}
+    <div className={`rounded-xl md:rounded-2xl border transition-all duration-300 ${unavailable ? 'bg-white/[0.02] border-white/5 opacity-30' : 'bg-white/[0.03] border-white/10 hover:border-amber-500/30 hover:bg-white/[0.05] cursor-pointer'}`}
       onClick={() => !unavailable && onToggle()}>
       <div className="flex items-center p-2.5 md:p-3.5 gap-2 md:gap-3">
-        <div className={`w-9 h-9 md:w-11 md:h-11 rounded-lg md:rounded-xl flex items-center justify-center font-black text-sm md:text-base shrink-0 ${unavailable ? 'bg-white/5 text-white/20' : 'bg-gradient-to-br from-orange-600/30 to-red-600/20 text-orange-400 ring-1 ring-orange-500/20'}`}>{primary}</div>
+        <div className={`w-9 h-9 md:w-11 md:h-11 rounded-lg md:rounded-xl flex items-center justify-center font-black text-sm md:text-base shrink-0 ${unavailable ? 'bg-white/5 text-white/20' : 'bg-gradient-to-br from-amber-600/30 to-red-600/20 text-amber-400 ring-1 ring-amber-500/20'}`}>{primary}</div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <h3 className={`font-black text-xs md:text-sm tracking-tight truncate ${unavailable ? 'text-white/20' : 'text-white'}`}>{player.name}</h3>
@@ -450,13 +453,26 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
           </div>
           <div className="flex gap-0.5 md:gap-1 mt-0.5">
             {allowed.map(ap => (
-              <span key={ap} className={`text-[7px] md:text-[8px] font-black px-1 md:px-1.5 py-0.5 rounded-md uppercase ${roster[ap] ? 'bg-white/5 text-white/15 line-through' : ap === primary ? 'bg-orange-600/20 text-orange-400' : 'bg-white/5 text-white/30'}`}>{POS_LABELS[ap]}</span>
+              <span key={ap} className={`text-[7px] md:text-[8px] font-black px-1 md:px-1.5 py-0.5 rounded-md uppercase ${roster[ap] ? 'bg-white/5 text-white/15 line-through' : ap === primary ? 'bg-amber-600/20 text-amber-400' : 'bg-white/5 text-white/30'}`}>{POS_LABELS[ap]}</span>
             ))}
           </div>
         </div>
         <div className="text-center shrink-0">
-          <div className={`text-lg md:text-xl font-black italic ${unavailable ? 'text-white/20' : scoreDiff > 0 ? 'text-green-400' : 'text-orange-400'}`}>{player.score}</div>
-          <div className="text-[6px] md:text-[7px] text-white/20 font-black uppercase">Rating</div>
+          {player._scores && Object.keys(player._scores).length > 1 ? (
+            <div className="flex gap-0.5">
+              {Object.entries(player._scores).slice(0,3).map(([pos,sc]) => (
+                <div key={pos} className="text-center">
+                  <div className="text-[8px] text-white/30 font-black">{POS_LABELS[pos]?.slice(0,2)}</div>
+                  <div className={`text-xs font-black italic ${unavailable ? 'text-white/20' : 'text-amber-400'}`}>{sc}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className={`text-lg md:text-xl font-black italic ${unavailable ? 'text-white/20' : scoreDiff > 0 ? 'text-green-400' : 'text-amber-400'}`}>{player.score}</div>
+              <div className="text-[6px] md:text-[7px] text-white/20 font-black uppercase">Rating</div>
+            </>
+          )}
         </div>
         {!unavailable && <div className="text-white/20">{expanded ? <ChevronUp size={14} className="md:size-4" /> : <ChevronDown size={14} className="md:size-4" />}</div>}
       </div>
@@ -467,7 +483,7 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
             <div className="grid gap-1.5 md:gap-2 mb-2 md:mb-3">
               {allowed.map(pos => (
                 <div key={pos} className={`rounded-lg md:rounded-xl p-2 md:p-2.5 ${roster[pos] ? 'bg-white/[0.02] opacity-30' : 'bg-white/[0.04]'}`}>
-                  <div className="flex justify-between items-center mb-1 md:mb-1.5"><span className="text-[8px] md:text-[9px] font-black text-orange-400 uppercase">{POS_LABELS[pos]} · {playerScore(player, pos)}</span>{roster[pos] && <span className="text-[7px] text-white/30">已填</span>}</div>
+                  <div className="flex justify-between items-center mb-1 md:mb-1.5"><span className="text-[8px] md:text-[9px] font-black text-amber-400 uppercase">{POS_LABELS[pos]} · {playerScore(player, pos)}</span>{roster[pos] && <span className="text-[7px] text-white/30">已填</span>}</div>
                   <div className="grid grid-cols-5 gap-0.5 md:gap-1">{POS_DISPLAY[pos].map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1"><div className="text-[6px] md:text-[7px] text-white/30 font-black uppercase">{l}</div><div className="text-[9px] md:text-[10px] font-mono font-bold text-white">{f(player.stats?.[k] ?? 0)}</div></div>))}</div>
                 </div>
               ))}
@@ -478,7 +494,7 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
           <div className="flex gap-0.5 md:gap-1">{[1,2,3,4,5].map(pos => {
             const canPick = allowed.includes(pos) && !roster[pos]; const filled = roster[pos];
             return (<button key={pos} onClick={e => { e.stopPropagation(); if (canPick) onPick(player, pos); }} disabled={!canPick}
-              className={`flex-1 py-2 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all min-h-[36px] md:min-h-0 ${canPick ? 'bg-gradient-to-b from-orange-500 to-orange-600 text-white hover:from-orange-400 active:scale-95 shadow-lg shadow-orange-900/30 cursor-pointer' : filled ? 'bg-white/5 text-white/15 cursor-not-allowed' : 'bg-white/[0.02] text-white/10 cursor-not-allowed'}`}>{filled ? '✓' : pos}</button>);
+              className={`flex-1 py-2 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all min-h-[36px] md:min-h-0 ${canPick ? 'bg-gradient-to-b from-amber-500 to-amber-600 text-white hover:from-amber-400 active:scale-95 shadow-lg shadow-amber-900/30 cursor-pointer' : filled ? 'bg-white/5 text-white/15 cursor-not-allowed' : 'bg-white/[0.02] text-white/10 cursor-not-allowed'}`}>{filled ? '✓' : pos}</button>);
           })}</div>
         </div>
       )}
@@ -491,22 +507,22 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
 function RosterPanel({ roster, score }) {
   return (
     <div className="bg-white/[0.02] border border-white/10 rounded-2xl md:rounded-[2rem] p-3 md:p-5 sticky top-3 md:top-5">
-      <div className="text-center mb-3 md:mb-5"><Shield size={16} className="md:size-5 text-orange-500/40 mx-auto mb-1.5 md:mb-2" /><h2 className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] md:tracking-[0.5em] text-white/20">BP 阵容</h2></div>
+      <div className="text-center mb-3 md:mb-5"><Shield size={16} className="md:size-5 text-amber-500/40 mx-auto mb-1.5 md:mb-2" /><h2 className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] md:tracking-[0.5em] text-white/20">BP 阵容</h2></div>
       <div className="space-y-1.5 md:space-y-2">
         {[1,2,3,4,5].map(pos => {
           const player = roster[pos]; const disp = POS_DISPLAY[pos] || [];
-          return (<div key={pos} className={`rounded-xl md:rounded-2xl border-2 transition-all duration-300 overflow-hidden ${player ? 'border-orange-500/30 bg-orange-500/[0.04]' : 'border-dashed border-white/5 bg-white/[0.01]'}`}>
+          return (<div key={pos} className={`rounded-xl md:rounded-2xl border-2 transition-all duration-300 overflow-hidden ${player ? 'border-amber-500/30 bg-amber-500/[0.04]' : 'border-dashed border-white/5 bg-white/[0.01]'}`}>
             <div className="flex items-center gap-2 md:gap-3 p-2.5 md:p-3">
-              <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm shrink-0 ${player ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-900/20' : 'bg-white/5 text-white/15'}`}>{pos}</div>
-              {player ? (<div className="flex-1 min-w-0"><div className="text-[7px] md:text-[8px] text-white/30 font-black uppercase tracking-wider">{POS_LABELS[pos]}</div><div className="flex items-center gap-1"><span className="text-xs md:text-sm font-black text-white truncate">{player.name}</span>{player.traits?.length > 0 && <span className="text-[9px] shrink-0">✨</span>}</div><div className="text-[8px] md:text-[9px] text-orange-400/60 font-bold truncate">{player.ti} · {player.team}</div>{player.traits?.length > 0 && <div className="flex gap-0.5 mt-0.5 flex-wrap">{player.traits.map(t=><span key={t.id} className="text-[6px] md:text-[7px] bg-purple-600/20 border border-purple-500/20 text-purple-300/80 px-1 py-0.5 rounded-full font-bold">{t.label}</span>)}</div>}</div>) : (<div className="flex-1 text-white/15 text-[10px] md:text-xs font-bold italic">等待英雄...</div>)}
-              {player && <div className="text-orange-400 font-black text-base md:text-lg shrink-0">{playerScore(player, pos)}</div>}
+              <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm shrink-0 ${player ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-900/20' : 'bg-white/5 text-white/15'}`}>{pos}</div>
+              {player ? (<div className="flex-1 min-w-0"><div className="text-[7px] md:text-[8px] text-white/30 font-black uppercase tracking-wider">{POS_LABELS[pos]}</div><div className="flex items-center gap-1"><span className="text-xs md:text-sm font-black text-white truncate">{player.name}</span>{player.traits?.length > 0 && <span className="text-[9px] shrink-0">✨</span>}</div><div className="text-[8px] md:text-[9px] text-amber-400/60 font-bold truncate">{player.ti} · {player.team}</div>{player.traits?.length > 0 && <div className="flex gap-0.5 mt-0.5 flex-wrap">{player.traits.map(t=><span key={t.id} className="text-[6px] md:text-[7px] bg-purple-600/20 border border-purple-500/20 text-purple-300/80 px-1 py-0.5 rounded-full font-bold">{t.label}</span>)}</div>}</div>) : (<div className="flex-1 text-white/15 text-[10px] md:text-xs font-bold italic">等待英雄...</div>)}
+              {player && <div className="text-amber-400 font-black text-base md:text-lg shrink-0">{playerScore(player, pos)}</div>}
             </div>
             {player && (<div className="px-2.5 md:px-3 pb-2.5 md:pb-3"><div className="grid grid-cols-5 gap-0.5 md:gap-1">{disp.map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1 md:py-1.5"><div className="text-[6px] md:text-[7px] text-white/25 font-black uppercase leading-tight">{l}</div><div className="text-[10px] md:text-[11px] font-mono font-bold text-white/90 mt-0.5">{f(player.stats?.[k] ?? 0)}</div></div>))}</div></div>)}
           </div>);
         })}
       </div>
       <div className="mt-3 md:mt-4 text-center">
-        <div className="flex gap-1 justify-center">{[1,2,3,4,5].map(pos => (<div key={pos} className={`w-5 h-1.5 md:w-6 md:h-2 rounded-full transition-all ${roster[pos] ? 'bg-orange-500' : 'bg-white/10'}`} />))}</div>
+        <div className="flex gap-1 justify-center">{[1,2,3,4,5].map(pos => (<div key={pos} className={`w-5 h-1.5 md:w-6 md:h-2 rounded-full transition-all ${roster[pos] ? 'bg-amber-500' : 'bg-white/10'}`} />))}</div>
         <div className="text-[7px] md:text-[8px] text-white/20 font-bold mt-1.5">{Object.values(roster).filter(Boolean).length}/5 已选</div>
       </div>
     </div>
@@ -522,14 +538,14 @@ function RevealScreen({ roster, score, rankInfo, chemistry, onNewGame, onShare, 
   return (
     <div className="max-w-lg mx-auto text-center px-2">
       {step >= 1 && (<>
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700"><div className="inline-flex items-center gap-1.5 md:gap-2 bg-white/5 border border-white/10 px-3 md:px-4 py-1 md:py-1.5 rounded-full mb-4 md:mb-6"><Sparkles size={12} className="md:size-3.5 text-orange-400" /><span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white/40">传奇阵容 · 集结完毕</span></div></div>
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700"><div className="inline-flex items-center gap-1.5 md:gap-2 bg-white/5 border border-white/10 px-3 md:px-4 py-1 md:py-1.5 rounded-full mb-4 md:mb-6"><Sparkles size={12} className="md:size-3.5 text-amber-400" /><span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white/40">传奇阵容 · 集结完毕</span></div></div>
 
         {/* Roster grid */}
         <div className={`grid grid-cols-5 gap-1 md:gap-2 mb-4 transition-all duration-700 ${step>=2?'opacity-100 translate-y-0':'opacity-0 translate-y-8'}`}>
           {[1,2,3,4,5].map((pos,i) => { const p=roster[pos]; const disp=POS_DISPLAY[pos]||[]; return (
             <div key={pos} className="bg-white/[0.03] border border-white/10 rounded-xl md:rounded-2xl p-1.5 md:p-3 text-center" style={{transitionDelay:`${i*80}ms`,animation:step>=2?`cardReveal .4s ease-out ${i*.1}s both`:''}}>
               <div className="text-[6px] md:text-[8px] font-black text-white/30 uppercase tracking-wider mb-0.5 md:mb-1">{POS_LABELS[pos]}</div>
-              <div className="w-7 h-7 md:w-10 md:h-10 mx-auto rounded-lg md:rounded-xl bg-gradient-to-br from-orange-600/30 to-red-600/20 flex items-center justify-center font-black text-[10px] md:text-sm text-orange-400 mb-1 md:mb-2 ring-1 ring-orange-500/20">{pos}</div>
+              <div className="w-7 h-7 md:w-10 md:h-10 mx-auto rounded-lg md:rounded-xl bg-gradient-to-br from-amber-600/30 to-red-600/20 flex items-center justify-center font-black text-[10px] md:text-sm text-amber-400 mb-1 md:mb-2 ring-1 ring-amber-500/20">{pos}</div>
               <div className="text-[9px] md:text-xs font-black text-white truncate mb-0.5">{p.name}</div>
               <div className="text-[7px] md:text-[8px] text-white/30 font-bold truncate">{p.ti}</div>
               <div className="mt-1 md:mt-2 space-y-0.5">{disp.slice(0,3).map(({k,l,f})=>(<div key={k} className="flex justify-between text-[7px] md:text-[8px] px-0.5"><span className="text-white/20">{l}</span><span className="font-mono font-bold text-white/80">{f(p.stats?.[k]??0)}</span></div>))}</div>
@@ -570,7 +586,7 @@ function RevealScreen({ roster, score, rankInfo, chemistry, onNewGame, onShare, 
             <div className="bg-[#0a0c12] rounded-2xl p-4 max-w-sm w-full" onClick={e => e.stopPropagation()}>
               <canvas ref={canvasRef} className="w-full rounded-xl" />
               <div className="flex gap-2 mt-3">
-                <button onClick={onDownload} className="flex-1 bg-orange-600 text-white py-3 rounded-xl font-black text-sm">保存图片</button>
+                <button onClick={onDownload} className="flex-1 bg-amber-600 text-white py-3 rounded-xl font-black text-sm">保存图片</button>
                 <button onClick={closeCard} className="flex-1 bg-white/10 text-white py-3 rounded-xl font-black text-sm">关闭</button>
               </div>
             </div>
