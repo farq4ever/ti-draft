@@ -332,17 +332,17 @@ export const TI_PLAYERS = [
     "team": "Scythe",
     "account_id": 89330493,
     "matchCount": 0,
-    "source": "estimated",
+    "source": "fabricated",
     "stats": {
-      "gpm": 580,
-      "xpm": 640,
-      "kda": 3.5,
-      "lane_eff": 54,
-      "hero_pool": 10,
-      "assists": 8,
+      "gpm": 530,
+      "xpm": 580,
+      "kda": 3,
+      "lane_eff": 50,
+      "hero_pool": 8,
+      "assists": 7,
       "obs_placed": 2,
       "sen_placed": 1,
-      "obs_denied": 42,
+      "obs_denied": 40,
       "stacks": 1
     }
   },
@@ -886,17 +886,17 @@ export const TI_PLAYERS = [
     "team": "Zenith",
     "account_id": 89330493,
     "matchCount": 0,
-    "source": "estimated",
+    "source": "fabricated",
     "stats": {
-      "gpm": 580,
-      "xpm": 640,
-      "kda": 3.5,
-      "lane_eff": 54,
-      "hero_pool": 10,
-      "assists": 8,
+      "gpm": 530,
+      "xpm": 580,
+      "kda": 3,
+      "lane_eff": 50,
+      "hero_pool": 8,
+      "assists": 7,
       "obs_placed": 2,
       "sen_placed": 1,
-      "obs_denied": 42,
+      "obs_denied": 40,
       "stacks": 1
     }
   },
@@ -958,18 +958,18 @@ export const TI_PLAYERS = [
     "team": "Zenith",
     "account_id": 86713549,
     "matchCount": 0,
-    "source": "estimated",
+    "source": "fabricated",
     "stats": {
-      "gpm": 310,
-      "xpm": 390,
-      "kda": 3.1,
-      "lane_eff": 43,
-      "hero_pool": 22,
-      "assists": 22,
-      "obs_placed": 14,
-      "sen_placed": 10,
-      "obs_denied": 66,
-      "stacks": 6
+      "gpm": 280,
+      "xpm": 355,
+      "kda": 2.7,
+      "lane_eff": 40,
+      "hero_pool": 16,
+      "assists": 18,
+      "obs_placed": 11,
+      "sen_placed": 7,
+      "obs_denied": 55,
+      "stacks": 4
     }
   },
   {
@@ -1153,17 +1153,17 @@ export const TI_PLAYERS = [
     "team": "Orange",
     "account_id": 89330493,
     "matchCount": 0,
-    "source": "estimated",
+    "source": "fabricated",
     "stats": {
-      "gpm": 580,
-      "xpm": 640,
-      "kda": 3.5,
-      "lane_eff": 54,
-      "hero_pool": 10,
-      "assists": 8,
+      "gpm": 530,
+      "xpm": 580,
+      "kda": 3,
+      "lane_eff": 50,
+      "hero_pool": 8,
+      "assists": 7,
       "obs_placed": 2,
       "sen_placed": 1,
-      "obs_denied": 42,
+      "obs_denied": 40,
       "stacks": 1
     }
   },
@@ -1177,18 +1177,18 @@ export const TI_PLAYERS = [
     "team": "Orange",
     "account_id": 86713549,
     "matchCount": 0,
-    "source": "estimated",
+    "source": "fabricated",
     "stats": {
-      "gpm": 310,
-      "xpm": 390,
-      "kda": 3.1,
-      "lane_eff": 43,
-      "hero_pool": 22,
-      "assists": 22,
-      "obs_placed": 14,
-      "sen_placed": 10,
-      "obs_denied": 66,
-      "stacks": 6
+      "gpm": 280,
+      "xpm": 355,
+      "kda": 2.7,
+      "lane_eff": 40,
+      "hero_pool": 16,
+      "assists": 18,
+      "obs_placed": 11,
+      "sen_placed": 7,
+      "obs_denied": 55,
+      "stacks": 4
     }
   },
   {
@@ -1520,17 +1520,17 @@ export const TI_PLAYERS = [
     "team": "Orange",
     "account_id": 89330493,
     "matchCount": 0,
-    "source": "estimated",
+    "source": "fabricated",
     "stats": {
-      "gpm": 580,
-      "xpm": 640,
-      "kda": 3.5,
-      "lane_eff": 54,
-      "hero_pool": 10,
-      "assists": 8,
+      "gpm": 530,
+      "xpm": 580,
+      "kda": 3,
+      "lane_eff": 50,
+      "hero_pool": 8,
+      "assists": 7,
       "obs_placed": 2,
       "sen_placed": 1,
-      "obs_denied": 42,
+      "obs_denied": 40,
       "stacks": 1
     }
   },
@@ -4034,18 +4034,18 @@ export const TI_PLAYERS = [
     "team": "LFY",
     "account_id": 149577193,
     "matchCount": 0,
-    "source": "estimated",
+    "source": "fabricated",
     "stats": {
-      "gpm": 310,
-      "xpm": 390,
-      "kda": 3.1,
-      "lane_eff": 43,
-      "hero_pool": 22,
-      "assists": 22,
-      "obs_placed": 14,
-      "sen_placed": 10,
-      "obs_denied": 66,
-      "stacks": 6
+      "gpm": 285,
+      "xpm": 360,
+      "kda": 2.8,
+      "lane_eff": 41,
+      "hero_pool": 17,
+      "assists": 19,
+      "obs_placed": 12,
+      "sen_placed": 8,
+      "obs_denied": 57,
+      "stacks": 5
     }
   },
   {
@@ -5535,18 +5535,18 @@ export const TI_PLAYERS = [
     "team": "Vici Gaming",
     "account_id": 149048100,
     "matchCount": 0,
-    "source": "estimated",
+    "source": "fabricated",
     "stats": {
-      "gpm": 310,
-      "xpm": 390,
-      "kda": 3.1,
-      "lane_eff": 43,
-      "hero_pool": 22,
-      "assists": 22,
-      "obs_placed": 14,
-      "sen_placed": 10,
-      "obs_denied": 66,
-      "stacks": 6
+      "gpm": 275,
+      "xpm": 350,
+      "kda": 2.6,
+      "lane_eff": 39,
+      "hero_pool": 15,
+      "assists": 17,
+      "obs_placed": 10,
+      "sen_placed": 7,
+      "obs_denied": 54,
+      "stacks": 4
     }
   },
   {
@@ -8076,4 +8076,4 @@ export const TI_POOLS = (() => {
   return pools;
 })();
 
-export const DATA_SUMMARY = { total: 325, api: 300, estimated: 25 };
+export const DATA_SUMMARY = { total: 325, api: 308, estimated: 17 };
