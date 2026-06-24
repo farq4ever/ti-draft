@@ -524,9 +524,12 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick, blind }) {
             {/* 隐藏属性 — 选前不显示任何提示 */}
           </div>
           <div className="flex gap-0.5 md:gap-1 mt-0.5">
-            {allowed.map(ap => (
-              <span key={ap} className={`text-[7px] md:text-[8px] font-black px-1 md:px-1.5 py-0.5 rounded-md uppercase tracking-wider ${roster[ap] ? 'bg-white/5 text-white/15 line-through' : 'bg-amber-500/15 text-amber-400 border border-amber-500/20'}`}>{POS_LABELS[ap]}</span>
-            ))}
+            {allowed.map(ap => {
+              const filledByOther = roster[ap] && roster[ap]?.name !== player.name;
+              const filledBySelf = roster[ap] && roster[ap]?.name === player.name;
+              return (
+              <span key={ap} className={`text-[7px] md:text-[8px] font-black px-1 md:px-1.5 py-0.5 rounded-md uppercase tracking-wider ${filledByOther ? 'bg-white/5 text-white/15 line-through' : filledBySelf ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30' : 'bg-amber-500/15 text-amber-400 border border-amber-500/20'}`}>{POS_LABELS[ap]}</span>
+            )})}
           </div>
         </div>
         <div className="text-right shrink-0 min-w-[60px]">
@@ -534,12 +537,14 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick, blind }) {
             <div className="text-white/10 text-lg font-black">?</div>
           ) : player._scores && Object.keys(player._scores).length > 1 ? (
             <div className="space-y-0.5">
-              {Object.entries(player._scores).map(([pos,sc]) => (
-                <div key={pos} className={`flex items-center gap-1.5 ${roster[pos] ? 'opacity-20' : ''}`}>
-                  <span className={`text-[9px] font-black tracking-wider ${roster[pos] ? 'text-white/15' : 'text-amber-400'}`}>{POS_LABELS[pos]?.slice(0,2)}</span>
-                  <span className={`text-sm font-black italic ${roster[pos] ? 'text-white/15' : scoreDiff > 0 ? 'text-green-400' : 'text-amber-400'}`}>{sc}</span>
+              {Object.entries(player._scores).map(([pos,sc]) => {
+                const filledByOther = roster[pos] && roster[pos]?.name !== player.name;
+                return (
+                <div key={pos} className={`flex items-center gap-1.5 ${filledByOther ? 'opacity-20' : ''}`}>
+                  <span className={`text-[9px] font-black tracking-wider ${filledByOther ? 'text-white/15' : 'text-amber-400'}`}>{POS_LABELS[pos]?.slice(0,2)}</span>
+                  <span className={`text-sm font-black italic ${filledByOther ? 'text-white/15' : scoreDiff > 0 ? 'text-green-400' : 'text-amber-400'}`}>{sc}</span>
                 </div>
-              ))}
+              );})}
             </div>
           ) : (
             <>
@@ -704,4 +709,4 @@ const FLAVOR_POOLS = {
   qualifier:[{w:10,t:'买活还在CD。别灰心——每一支TI冠军战队都曾在预选赛里挣扎过。再次鼓起丧失的勇气吧，下一场选秀，你依然是那个相信奇迹的少年。'},{w:8,t:'预选赛出局。这很痛，但Dota教会我们的一件事就是：输了就再来。你的选秀思路没有问题，只是这次运气不在你这边。'},{w:7,t:'"Don\'t give up!" 每一个Dota玩家都听过队友的这句话。预选赛的失败只是暂时的——下一局，你会有更好的Pick。'},{w:5,t:'也许你选的都是传奇。但传奇也需要正确的组合——五个核心不等于一支战队。回头看看你的阵容，找到那块缺失的拼图。再次鼓起丧失的勇气吧。'},{w:3,t:'剑已折断，但剑心犹在。预选赛的失败从来不是终点——TI历史上，多少冠军在成名前也曾倒在预选的门槛上。站起来，再选一次。'},{w:1,t:'你输了吗？不，你只是还没赢。Dota最美的部分，就是永远有下一场比赛。拿起鼠标，回到选秀界面——那个属于你的不朽盾，还在等你。'}],
 };
 function pickFlavor(pool) { const t=pool.reduce((s,x)=>s+x.w,0); let r=Math.random()*t; for(const x of pool){ r-=x.w; if(r<=0) return x.t; } return pool[0].t; }
-function getFlavorText(score) { if(score>=92)return pickFlavor(FLAVOR_POOLS.champion); if(score>=90)return pickFlavor(FLAVOR_POOLS.finalist); if(score>=84)return pickFlavor(FLAVOR_POOLS.top4); if(score>=76)return pickFlavor(FLAVOR_POOLS.top8); if(score>=68)return pickFlavor(FLAVOR_POOLS.group); return pickFlavor(FLAVOR_POOLS.qualifier); }
+function getFlavorText(score) { if(score>=92)return pickFlavor(FLAVOR_POOLS.champion); if(score>=90)return pickFlavor(FLAVOR_POOLS.finalist); if(score>=84)return pickFlavor(FLAVOR_POOLS.top4); if(score>=78)return pickFlavor(FLAVOR_POOLS.top8); if(score>=72)return pickFlavor(FLAVOR_POOLS.group); return pickFlavor(FLAVOR_POOLS.qualifier); }
