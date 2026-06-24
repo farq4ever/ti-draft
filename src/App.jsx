@@ -122,8 +122,8 @@ export default function App() {
     sfx('reveal');
     setTimeout(() => {
       const score = finalScore(finalRoster);
-      if (score >= 95) { fireConfetti(); sfx('champion'); }
-      else if (score < 70) sfx('fail');
+      if (score >= 92) { fireConfetti(); sfx('champion'); }
+      else if (score < 68) sfx('fail');
     }, 1800);
     checkAchievements(finalRoster);
   };
@@ -306,7 +306,21 @@ export default function App() {
         <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-yellow-600/10 rounded-full blur-[100px]" />
       </div>
       <div className="max-w-lg w-full relative z-10 text-center">
-        <div className="text-6xl mb-4">🛡️</div>
+        <div className="mb-6 flex justify-center">
+          <svg width="80" height="80" viewBox="0 0 100 100" className="drop-shadow-[0_0_30px_rgba(245,158,11,0.3)]">
+            <defs>
+              <linearGradient id="aegisG" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#f59e0b"/>
+                <stop offset="50%" stopColor="#d97706"/>
+                <stop offset="100%" stopColor="#92400e"/>
+              </linearGradient>
+            </defs>
+            <path d="M50 5 L85 25 L85 55 C85 75 50 95 50 95 C50 95 15 75 15 55 L15 25 Z" fill="url(#aegisG)" stroke="#fbbf24" strokeWidth="2"/>
+            <path d="M50 20 L70 32 L70 52 C70 65 50 78 50 78 C50 78 30 65 30 52 L30 32 Z" fill="none" stroke="#fef3c7" strokeWidth="1.5" opacity="0.6"/>
+            <circle cx="50" cy="50" r="12" fill="#fef3c7" opacity="0.9"/>
+            <path d="M44 44 L56 44 L56 56 L44 56 Z" fill="#d97706" transform="rotate(45 50 50)"/>
+          </svg>
+        </div>
         <h1 className="text-3xl md:text-4xl font-black italic text-white mb-2 tracking-tight">举盾</h1>
         <p className="text-white/30 text-xs md:text-sm font-bold uppercase tracking-[0.3em] mb-10">TI 全明星选秀</p>
         <div className="space-y-4">
@@ -690,4 +704,4 @@ const FLAVOR_POOLS = {
   qualifier:[{w:10,t:'买活还在CD。别灰心——每一支TI冠军战队都曾在预选赛里挣扎过。再次鼓起丧失的勇气吧，下一场选秀，你依然是那个相信奇迹的少年。'},{w:8,t:'预选赛出局。这很痛，但Dota教会我们的一件事就是：输了就再来。你的选秀思路没有问题，只是这次运气不在你这边。'},{w:7,t:'"Don\'t give up!" 每一个Dota玩家都听过队友的这句话。预选赛的失败只是暂时的——下一局，你会有更好的Pick。'},{w:5,t:'也许你选的都是传奇。但传奇也需要正确的组合——五个核心不等于一支战队。回头看看你的阵容，找到那块缺失的拼图。再次鼓起丧失的勇气吧。'},{w:3,t:'剑已折断，但剑心犹在。预选赛的失败从来不是终点——TI历史上，多少冠军在成名前也曾倒在预选的门槛上。站起来，再选一次。'},{w:1,t:'你输了吗？不，你只是还没赢。Dota最美的部分，就是永远有下一场比赛。拿起鼠标，回到选秀界面——那个属于你的不朽盾，还在等你。'}],
 };
 function pickFlavor(pool) { const t=pool.reduce((s,x)=>s+x.w,0); let r=Math.random()*t; for(const x of pool){ r-=x.w; if(r<=0) return x.t; } return pool[0].t; }
-function getFlavorText(score) { if(score>=76)return pickFlavor(FLAVOR_POOLS.champion); if(score>=71)return pickFlavor(FLAVOR_POOLS.finalist); if(score>=66)return pickFlavor(FLAVOR_POOLS.top4); if(score>=61)return pickFlavor(FLAVOR_POOLS.top8); if(score>=56)return pickFlavor(FLAVOR_POOLS.group); return pickFlavor(FLAVOR_POOLS.qualifier); }
+function getFlavorText(score) { if(score>=92)return pickFlavor(FLAVOR_POOLS.champion); if(score>=86)return pickFlavor(FLAVOR_POOLS.finalist); if(score>=80)return pickFlavor(FLAVOR_POOLS.top4); if(score>=74)return pickFlavor(FLAVOR_POOLS.top8); if(score>=68)return pickFlavor(FLAVOR_POOLS.group); return pickFlavor(FLAVOR_POOLS.qualifier); }
