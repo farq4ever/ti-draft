@@ -113,8 +113,8 @@ export default function App() {
     sfx('reveal');
     setTimeout(() => {
       const score = finalScore(finalRoster);
-      if (score >= 85) { fireConfetti(); sfx('champion'); }
-      else if (score < 65) sfx('fail');
+      if (score >= 88) { fireConfetti(); sfx('champion'); }
+      else if (score < 68) sfx('fail');
     }, 1800);
     checkAchievements(finalRoster);
   };
