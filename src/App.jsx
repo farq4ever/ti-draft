@@ -444,9 +444,8 @@ export default function App() {
 // ═══════════════ PLAYER CARD ═══════════════
 function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
   const allowed = Array.isArray(player.allowedPos) ? player.allowedPos : [player.allowedPos];
-  const allBlocked = allowed.every(pos => roster[pos] !== null && roster[pos]?.name !== player.name);
   const used = Object.values(roster).some(r => r?.name === player.name && r?.ti === player.ti);
-  const unavailable = allBlocked && !used;
+  const unavailable = used;
   const primary = allowed[0];
   const display = POS_DISPLAY[primary] || [];
   const hasTrait = player.traits && player.traits.length > 0;
