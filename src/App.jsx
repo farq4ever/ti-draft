@@ -28,6 +28,7 @@ function fireConfetti() {
 }
 
 export default function App() {
+  const [gameMode, setGameMode] = useState(null); // null=menu, 'classic', 'peak'
   const [round, setRound] = useState(1);
   const [pool, setPool] = useState(() => pickTeam());
   const [roster, setRoster] = useState({ 1: null, 2: null, 3: null, 4: null, 5: null });
@@ -113,8 +114,8 @@ export default function App() {
     sfx('reveal');
     setTimeout(() => {
       const score = finalScore(finalRoster);
-      if (score >= 88) { fireConfetti(); sfx('champion'); }
-      else if (score < 68) sfx('fail');
+      if (score >= 95) { fireConfetti(); sfx('champion'); }
+      else if (score < 70) sfx('fail');
     }, 1800);
     checkAchievements(finalRoster);
   };
@@ -289,6 +290,42 @@ export default function App() {
   const unlockedCount = ACHIEVEMENTS.filter(a => storedAch[a.id]).length;
   const refreshAch = () => setStoredAch(loadAchievements());
 
+  // ═══ MENU SCREEN ═══
+  if (!gameMode) return (
+    <div className="min-h-screen bg-gradient-to-b from-[#0a0e18] via-[#0f111d] to-[#0b0d16] text-slate-200 flex items-center justify-center p-4">
+      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-15">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/20 rounded-full blur-[128px]" />
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-yellow-600/10 rounded-full blur-[100px]" />
+      </div>
+      <div className="max-w-lg w-full relative z-10 text-center">
+        <div className="text-6xl mb-4">🛡️</div>
+        <h1 className="text-3xl md:text-4xl font-black italic text-white mb-2 tracking-tight">举盾</h1>
+        <p className="text-white/30 text-xs md:text-sm font-bold uppercase tracking-[0.3em] mb-10">TI 全明星选秀</p>
+        <div className="space-y-4">
+          <button onClick={() => setGameMode('classic')}
+            className="block w-full p-5 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-amber-500/40 hover:bg-white/[0.06] transition-all text-left group">
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-2xl">📊</span>
+              <span className="text-lg font-black text-white group-hover:text-amber-400 transition-colors">经典模式</span>
+            </div>
+            <p className="text-white/30 text-xs leading-relaxed ml-11">所有选手数据和评分可见，用策略选出最强的TI传奇阵容。</p>
+          </button>
+          <button onClick={() => setGameMode('peak')}
+            className="block w-full p-5 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-amber-500/40 hover:bg-white/[0.06] transition-all text-left group">
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-2xl">🌫️</span>
+              <span className="text-lg font-black text-white group-hover:text-amber-400 transition-colors">巅峰模式</span>
+            </div>
+            <p className="text-white/30 text-xs leading-relaxed ml-11">隐藏所有数据和评分，凭直觉和对选手的了解盲选。真正的TI教练不看数据。</p>
+          </button>
+        </div>
+        <div className="mt-10 text-white/10 text-[10px]">TI2-TI13 · 300+ 名传奇选手</div>
+      </div>
+    </div>
+  );
+
+  const blind = gameMode === 'peak';
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0e18] via-[#0f111d] to-[#0b0d16] text-slate-200 selection:bg-amber-500/30">
       <style>{`@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}@keyframes cardReveal{0%{transform:rotateY(90deg);opacity:0}100%{transform:rotateY(0);opacity:1}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}@keyframes slideUp{0%{transform:translateY(20px);opacity:0}100%{transform:translateY(0);opacity:1}}`}</style>
@@ -409,7 +446,7 @@ export default function App() {
                 </div>
                 <div className="space-y-1.5 md:space-y-2">
                   {pool.players.map((p, i) => (
-                    <PlayerCard key={`${p.name}-${i}`} player={p} roster={roster}
+                    <PlayerCard key={`${p.name}-${i}`} player={p} roster={roster} blind={blind}
                       expanded={expandedPlayer === i} onToggle={() => { sfx('pick'); setExpandedPlayer(expandedPlayer === i ? null : i); }}
                       onPick={handlePick} />
                   ))}
@@ -423,7 +460,7 @@ export default function App() {
                 )}
               </div>
               <div className={`lg:col-span-5 ${mobileTab !== 'roster' ? 'hidden md:block' : ''}`}>
-                <RosterPanel roster={roster} score={null} onPick={handlePick} />
+                <RosterPanel roster={roster} score={null} onPick={handlePick} blind={blind} />
               </div>
             </div>
           </>
@@ -442,7 +479,7 @@ export default function App() {
 }
 
 // ═══════════════ PLAYER CARD ═══════════════
-function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
+function PlayerCard({ player, roster, expanded, onToggle, onPick, blind }) {
   const allowed = Array.isArray(player.allowedPos) ? player.allowedPos : [player.allowedPos];
   const used = Object.values(roster).some(r => r?.name === player.name && r?.ti === player.ti);
   const unavailable = used;
@@ -468,7 +505,9 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
           </div>
         </div>
         <div className="text-right shrink-0 min-w-[60px]">
-          {player._scores && Object.keys(player._scores).length > 1 ? (
+          {blind ? (
+            <div className="text-white/10 text-lg font-black">?</div>
+          ) : player._scores && Object.keys(player._scores).length > 1 ? (
             <div className="space-y-0.5">
               {Object.entries(player._scores).map(([pos,sc]) => (
                 <div key={pos} className={`flex items-center gap-1.5 ${roster[pos] ? 'opacity-20' : ''}`}>
@@ -493,12 +532,12 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
             <div className="grid gap-1.5 md:gap-2 mb-2 md:mb-3">
               {allowed.map(pos => (
                 <div key={pos} className={`rounded-lg md:rounded-xl p-2 md:p-2.5 ${roster[pos] ? 'bg-white/[0.02] opacity-30' : 'bg-white/[0.04]'}`}>
-                  <div className="flex justify-between items-center mb-1 md:mb-1.5"><span className="text-[8px] md:text-[9px] font-black text-amber-400 uppercase">{POS_LABELS[pos]} · {playerScore(player, pos)}</span>{roster[pos] && <span className="text-[7px] text-white/30">已填</span>}</div>
-                  <div className="grid grid-cols-5 gap-0.5 md:gap-1">{POS_DISPLAY[pos].map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1"><div className="text-[6px] md:text-[7px] text-white/30 font-black uppercase">{l}</div><div className="text-[9px] md:text-[10px] font-mono font-bold text-white">{f(player.stats?.[k] ?? 0)}</div></div>))}</div>
+                  <div className="flex justify-between items-center mb-1 md:mb-1.5"><span className="text-[8px] md:text-[9px] font-black text-amber-400 uppercase">{POS_LABELS[pos]}{!blind && ' · '+playerScore(player, pos)}</span>{roster[pos] && <span className="text-[7px] text-white/30">已填</span>}</div>
+                  {!blind && <div className="grid grid-cols-5 gap-0.5 md:gap-1">{POS_DISPLAY[pos].map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1"><div className="text-[6px] md:text-[7px] text-white/30 font-black uppercase">{l}</div><div className="text-[9px] md:text-[10px] font-mono font-bold text-white">{f(player.stats?.[k] ?? 0)}</div></div>))}</div>}
                 </div>
               ))}
             </div>
-          ) : (
+          ) : blind ? null : (
             <div className="grid grid-cols-5 gap-0.5 md:gap-1 mb-2 md:mb-3">{display.map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1 md:py-1.5"><div className="text-[6px] md:text-[7px] text-white/30 font-black uppercase">{l}</div><div className="text-[10px] md:text-[11px] font-mono font-bold text-white">{f(player.stats?.[k] ?? 0)}</div></div>))}</div>
           )}
           <div className="flex gap-0.5 md:gap-1">{[1,2,3,4,5].map(pos => {
@@ -511,8 +550,8 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
             let label = String(pos);
             if (isFilledOther) { btnClass = 'bg-white/5 text-white/15 cursor-not-allowed'; label = '✓'; }
             else if (isOwn) { btnClass = 'bg-amber-500/20 text-amber-400 cursor-default'; label = '●'; }
-            else if (isSwapTarget) { btnClass = 'bg-gradient-to-b from-amber-400 to-amber-500 text-black font-bold hover:from-amber-300 active:scale-95 shadow-lg shadow-amber-400/40 cursor-pointer'; label = player._scores?.[pos] != null ? String(player._scores[pos]) : '↗'; }
-            else if (canPick) { btnClass = 'bg-gradient-to-b from-amber-500 to-amber-600 text-white hover:from-amber-400 active:scale-95 shadow-lg shadow-amber-900/30 cursor-pointer'; }
+            else if (isSwapTarget) { btnClass = 'bg-gradient-to-b from-amber-400 to-amber-500 text-black font-bold hover:from-amber-300 active:scale-95 shadow-lg shadow-amber-400/40 cursor-pointer'; label = blind ? '↗' : (player._scores?.[pos] != null ? String(player._scores[pos]) : '↗'); }
+            else if (canPick) { btnClass = 'bg-gradient-to-b from-amber-500 to-amber-600 text-white hover:from-amber-400 active:scale-95 shadow-lg shadow-amber-900/30 cursor-pointer'; if (blind) label = '?'; }
             return (<button key={pos} onClick={e => { e.stopPropagation(); if (canPick) onPick(player, pos); }} disabled={!canPick}
               className={`flex-1 py-2 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all min-h-[36px] md:min-h-0 ${btnClass}`}>{label}</button>);
           })}</div>
@@ -524,7 +563,7 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick }) {
 }
 
 // ═══════════════ ROSTER PANEL ═══════════════
-function RosterPanel({ roster, score, onPick }) {
+function RosterPanel({ roster, score, onPick, blind }) {
   return (
     <div className="bg-white/[0.02] border border-white/10 rounded-2xl md:rounded-[2rem] p-3 md:p-5 sticky top-3 md:top-5">
       <div className="text-center mb-3 md:mb-5"><Shield size={16} className="md:size-5 text-amber-500/40 mx-auto mb-1.5 md:mb-2" /><h2 className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] md:tracking-[0.5em] text-white/20">BP 阵容</h2></div>
@@ -546,9 +585,9 @@ function RosterPanel({ roster, score, onPick }) {
                 <span className="text-amber-400/70">↗ {m.player.name}</span>
                 <span className="text-amber-400 font-bold ml-0.5">{m.score}</span>
               </button>))}</div>}</div>)}
-              {player && <div className="text-amber-400 font-black text-base md:text-lg shrink-0">{playerScore(player, pos)}</div>}
+              {player && !blind && <div className="text-amber-400 font-black text-base md:text-lg shrink-0">{playerScore(player, pos)}</div>}
             </div>
-            {player && (<div className="px-2.5 md:px-3 pb-2.5 md:pb-3"><div className="grid grid-cols-5 gap-0.5 md:gap-1">{disp.map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1 md:py-1.5"><div className="text-[6px] md:text-[7px] text-white/25 font-black uppercase leading-tight">{l}</div><div className="text-[10px] md:text-[11px] font-mono font-bold text-white/90 mt-0.5">{f(player.stats?.[k] ?? 0)}</div></div>))}</div></div>)}
+            {player && !blind && (<div className="px-2.5 md:px-3 pb-2.5 md:pb-3"><div className="grid grid-cols-5 gap-0.5 md:gap-1">{disp.map(({k,l,f}) => (<div key={k} className="text-center bg-black/30 rounded-md md:rounded-lg py-1 md:py-1.5"><div className="text-[6px] md:text-[7px] text-white/25 font-black uppercase leading-tight">{l}</div><div className="text-[10px] md:text-[11px] font-mono font-bold text-white/90 mt-0.5">{f(player.stats?.[k] ?? 0)}</div></div>))}</div></div>)}
           </div>);
         })}
       </div>
