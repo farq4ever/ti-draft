@@ -42,7 +42,7 @@ export function playerScore(player, pos) {
   const m = POSITION_METRICS[pos], b = BENCHMARKS[pos];
   if (!m || !b) return 50;
   let t = 0;
-  m.forEach((k, i) => { const v = player.stats?.[k] || 0; t += Math.min(v / (b[k] || 1), 1.5) * 100 * (5 - i) / 15; });
+  m.forEach((k, i) => { const v = player.stats?.[k] || 0; t += Math.min(v / (b[k] || 1), 1.0) * 100 * (5 - i) / 15; });
   return Math.round(t);
 }
 
@@ -206,11 +206,11 @@ export function finalScore(roster) {
 
 // TI 战绩判定
 export function getTIRank(score) {
-  if (score >= 76) return { id:'champion', title:'🏆 TI 冠军', desc:'不朽盾上刻下了你的名字。', color:'text-yellow-400', bg:'from-yellow-600 to-amber-700' };
-  if (score >= 71) return { id:'finalist', title:'🥈 TI 决赛', desc:'只差一步就能举起神盾。', color:'text-slate-300', bg:'from-slate-600 to-slate-800' };
-  if (score >= 66) return { id:'top4',    title:'🥉 TI 四强', desc:'世界前四，已是无数人仰望的高度。', color:'text-amber-400', bg:'from-amber-700 to-yellow-800' };
-  if (score >= 61) return { id:'top8',    title:'📜 TI 八强', desc:'淘汰赛的聚光灯下，你证明了自己的眼光。', color:'text-purple-400', bg:'from-purple-700 to-indigo-800' };
-  if (score >= 56) return { id:'group',   title:'📜 小组赛',   desc:'正赛的门槛已经跨过。', color:'text-blue-400', bg:'from-blue-700 to-cyan-800' };
+  if (score >= 82) return { id:'champion', title:'🎖️ TI 冠军', desc:'不朽盾上刻下了你的名字。', color:'text-yellow-400', bg:'from-yellow-600 to-amber-700' };
+  if (score >= 77) return { id:'finalist', title:'🥈 TI 决赛', desc:'只差一步就能举起神盾。', color:'text-slate-300', bg:'from-slate-600 to-slate-800' };
+  if (score >= 72) return { id:'top4',    title:'🥉 TI 四强', desc:'世界前四，已是无数人仰望的高度。', color:'text-amber-400', bg:'from-amber-700 to-yellow-800' };
+  if (score >= 67) return { id:'top8',    title:'📜 TI 八强', desc:'淘汰赛的聚光灯下，你证明了自己的眼光。', color:'text-purple-400', bg:'from-purple-700 to-indigo-800' };
+  if (score >= 62) return { id:'group',   title:'📜 小组赛',   desc:'正赛的门槛已经跨过。', color:'text-blue-400', bg:'from-blue-700 to-cyan-800' };
   return { id:'qualifier', title:'💔 预选出局', desc:'胜败皆常事。再次鼓起丧失的勇气吧。', color:'text-slate-500', bg:'from-slate-800 to-slate-900' };
 }
 
