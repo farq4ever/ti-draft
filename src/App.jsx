@@ -4,16 +4,17 @@ import { TI_PLAYERS, TI_POOLS, POS_LABELS, POS_DISPLAY, playerScore, finalScore,
 
 const POOL_KEYS = Object.keys(TI_POOLS);
 
-function pickTeam() {
+function pickTeam(skipTraits) {
   const key = POOL_KEYS[Math.floor(Math.random() * POOL_KEYS.length)];
   const td = TI_POOLS[key];
-  const players = assignHiddenTraits(td.players.map(p => {
+  const base = td.players.map(p => {
     const allowed = Array.isArray(p.allowedPos) ? p.allowedPos : [p.allowedPos];
     const scores = {};
     allowed.forEach(pos => { scores[pos] = playerScore(p, pos); });
     const primary = allowed[0];
     return { ...p, score: scores[primary], _scores: scores };
-  }));
+  });
+  const players = skipTraits ? base.map(p => ({ ...p, traits: [] })) : assignHiddenTraits(base);
   return { ...td, players };
 }
 
@@ -54,7 +55,7 @@ export default function App() {
     setRound(1); setRoster({ 1: null, 2: null, 3: null, 4: null, 5: null });
     setPhase('draft'); setHistory([]); setExpandedPlayer(null); setRerolls(2);
     setShowCard(false); setNewAchievements([]);
-    setPool(pickTeam());
+    setPool(pickTeam(blind));
     sfx('click');
   };
 
@@ -62,13 +63,12 @@ export default function App() {
     setRound(1); setRoster({ 1: null, 2: null, 3: null, 4: null, 5: null });
     setPhase('draft'); setHistory([]); setExpandedPlayer(null); setRerolls(2);
     setShowCard(false); setNewAchievements([]);
-    setAiPicks?.([]); setAiRoster?.(null);
-    setPool(pickTeam());
+    setPool(pickTeam(blind));
   };
 
   const rerollTeam = () => {
     if (rerolls <= 0 || phase !== 'draft') return;
-    setRerolls(r => r - 1); setExpandedPlayer(null); setPool(pickTeam());
+    setRerolls(r => r - 1); setExpandedPlayer(null); setPool(pickTeam(blind));
     sfx('click');
   };
 
@@ -113,7 +113,7 @@ export default function App() {
   };
 
   const advanceRound = (newRoster) => {
-    if (round < 5) { setRound(round + 1); setPool(pickTeam()); }
+    if (round < 5) { setRound(round + 1); setPool(pickTeam(blind)); }
     else { endGame(newRoster); }
   };
 
@@ -576,7 +576,7 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick, blind }) {
             if (isFilledOther) { btnClass = 'bg-white/5 text-white/15 cursor-not-allowed'; label = '✓'; }
             else if (isOwn) { btnClass = 'bg-amber-500/20 text-amber-400 cursor-default'; label = '●'; }
             else if (isSwapTarget) { btnClass = 'bg-gradient-to-b from-amber-400 to-amber-500 text-black font-bold hover:from-amber-300 active:scale-95 shadow-lg shadow-amber-400/40 cursor-pointer'; label = blind ? '↗' : (player._scores?.[pos] != null ? String(player._scores[pos]) : '↗'); }
-            else if (canPick) { btnClass = 'bg-gradient-to-b from-amber-500 to-amber-600 text-white hover:from-amber-400 active:scale-95 shadow-lg shadow-amber-900/30 cursor-pointer'; if (blind) label = '?'; }
+            else if (canPick) { btnClass = 'bg-gradient-to-b from-amber-500 to-amber-600 text-white hover:from-amber-400 active:scale-95 shadow-lg shadow-amber-900/30 cursor-pointer'; }
             return (<button key={pos} onClick={e => { e.stopPropagation(); if (canPick) onPick(player, pos); }} disabled={!canPick}
               className={`flex-1 py-2 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all min-h-[36px] md:min-h-0 ${btnClass}`}>{label}</button>);
           })}</div>
@@ -704,4 +704,4 @@ const FLAVOR_POOLS = {
   qualifier:[{w:10,t:'买活还在CD。别灰心——每一支TI冠军战队都曾在预选赛里挣扎过。再次鼓起丧失的勇气吧，下一场选秀，你依然是那个相信奇迹的少年。'},{w:8,t:'预选赛出局。这很痛，但Dota教会我们的一件事就是：输了就再来。你的选秀思路没有问题，只是这次运气不在你这边。'},{w:7,t:'"Don\'t give up!" 每一个Dota玩家都听过队友的这句话。预选赛的失败只是暂时的——下一局，你会有更好的Pick。'},{w:5,t:'也许你选的都是传奇。但传奇也需要正确的组合——五个核心不等于一支战队。回头看看你的阵容，找到那块缺失的拼图。再次鼓起丧失的勇气吧。'},{w:3,t:'剑已折断，但剑心犹在。预选赛的失败从来不是终点——TI历史上，多少冠军在成名前也曾倒在预选的门槛上。站起来，再选一次。'},{w:1,t:'你输了吗？不，你只是还没赢。Dota最美的部分，就是永远有下一场比赛。拿起鼠标，回到选秀界面——那个属于你的不朽盾，还在等你。'}],
 };
 function pickFlavor(pool) { const t=pool.reduce((s,x)=>s+x.w,0); let r=Math.random()*t; for(const x of pool){ r-=x.w; if(r<=0) return x.t; } return pool[0].t; }
-function getFlavorText(score) { if(score>=92)return pickFlavor(FLAVOR_POOLS.champion); if(score>=86)return pickFlavor(FLAVOR_POOLS.finalist); if(score>=80)return pickFlavor(FLAVOR_POOLS.top4); if(score>=74)return pickFlavor(FLAVOR_POOLS.top8); if(score>=68)return pickFlavor(FLAVOR_POOLS.group); return pickFlavor(FLAVOR_POOLS.qualifier); }
+function getFlavorText(score) { if(score>=92)return pickFlavor(FLAVOR_POOLS.champion); if(score>=88)return pickFlavor(FLAVOR_POOLS.finalist); if(score>=82)return pickFlavor(FLAVOR_POOLS.top4); if(score>=75)return pickFlavor(FLAVOR_POOLS.top8); if(score>=68)return pickFlavor(FLAVOR_POOLS.group); return pickFlavor(FLAVOR_POOLS.qualifier); }
