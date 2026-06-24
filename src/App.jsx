@@ -617,6 +617,7 @@ function RevealScreen({ roster, score, rankInfo, chemistry, onNewGame, onShare, 
               <div className="text-[6px] md:text-[8px] font-black text-white/30 uppercase tracking-wider mb-0.5 md:mb-1">{POS_LABELS[pos]}</div>
               <div className="w-7 h-7 md:w-10 md:h-10 mx-auto rounded-lg md:rounded-xl bg-gradient-to-br from-amber-600/30 to-red-600/20 flex items-center justify-center font-black text-[10px] md:text-sm text-amber-400 mb-1 md:mb-2 ring-1 ring-amber-500/20">{pos}</div>
               <div className="text-[9px] md:text-xs font-black text-white truncate mb-0.5">{p.name}</div>
+              <div className="text-[8px] md:text-[10px] font-black text-amber-400 mb-0.5">{playerScore(p, pos)}</div>
               <div className="text-[7px] md:text-[8px] text-white/30 font-bold truncate">{p.ti}</div>
               <div className="mt-1 md:mt-2 space-y-0.5">{disp.slice(0,3).map(({k,l,f})=>(<div key={k} className="flex justify-between text-[7px] md:text-[8px] px-0.5"><span className="text-white/20">{l}</span><span className="font-mono font-bold text-white/80">{f(p.stats?.[k]??0)}</span></div>))}</div>
             </div>
