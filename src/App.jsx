@@ -539,9 +539,11 @@ function PlayerCard({ player, roster, expanded, onToggle, onPick, blind }) {
             <div className="space-y-0.5">
               {Object.entries(player._scores).map(([pos,sc]) => {
                 const filledByOther = roster[pos] && roster[pos]?.name !== player.name;
+                const filledBySelf = roster[pos] && roster[pos]?.name === player.name;
+                const dim = filledByOther || (unavailable && !filledBySelf);
                 return (
-                <div key={pos} className={`flex items-center gap-1.5 ${filledByOther ? 'opacity-20' : ''}`}>
-                  <span className={`text-[9px] font-black tracking-wider ${filledByOther ? 'text-white/15' : 'text-amber-400'}`}>{POS_LABELS[pos]?.slice(0,2)}</span>
+                <div key={pos} className={`flex items-center gap-1.5 ${dim ? 'opacity-25' : ''}`}>
+                  <span className={`text-[9px] font-black tracking-wider ${filledByOther ? 'text-white/15' : filledBySelf ? 'text-amber-300' : 'text-amber-400'}`}>{POS_LABELS[pos]?.slice(0,2)}</span>
                   <span className={`text-sm font-black italic ${filledByOther ? 'text-white/15' : scoreDiff > 0 ? 'text-green-400' : 'text-amber-400'}`}>{sc}</span>
                 </div>
               );})}
