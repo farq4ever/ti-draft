@@ -58,6 +58,14 @@ export default function App() {
     sfx('click');
   };
 
+  const newGame = () => {
+    setRound(1); setRoster({ 1: null, 2: null, 3: null, 4: null, 5: null });
+    setPhase('draft'); setHistory([]); setExpandedPlayer(null); setRerolls(2);
+    setShowCard(false); setNewAchievements([]);
+    setAiPicks?.([]); setAiRoster?.(null);
+    setPool(pickTeam());
+  };
+
   const rerollTeam = () => {
     if (rerolls <= 0 || phase !== 'draft') return;
     setRerolls(r => r - 1); setExpandedPlayer(null); setPool(pickTeam());
@@ -363,6 +371,8 @@ export default function App() {
             <button onClick={resetGame} disabled={phase === 'reveal'} title="完全重开游戏"
               className="flex items-center gap-1 md:gap-1.5 bg-white/5 border border-red-500/30 hover:border-red-400 hover:bg-red-500/10 px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-[8px] md:text-[10px] font-black uppercase disabled:opacity-20 transition-all cursor-pointer">
               <RotateCcw size={11} className="md:size-3 text-red-400" />重开</button>
+            <button onClick={() => setGameMode(null)} title="返回模式选择"
+              className="flex items-center gap-1 bg-white/5 border border-white/10 hover:border-white/30 px-2 py-1.5 rounded-lg text-[8px] md:text-[10px] font-black uppercase transition-all cursor-pointer">🏠 主页</button>
             {storedAch.totalGames > 0 && (
               <button onClick={() => setShowAchievements(!showAchievements)} title="成就"
                 className="flex items-center gap-1 bg-yellow-500/10 border border-yellow-500/30 hover:border-yellow-400 hover:bg-yellow-500/20 px-2.5 py-1.5 rounded-xl text-[10px] font-black transition-all cursor-pointer">
@@ -469,7 +479,8 @@ export default function App() {
         {/* REVEAL PHASE */}
         {phase === 'reveal' && (
           <RevealScreen roster={roster} score={myScore} rankInfo={rankInfo} chemistry={chemistry}
-            onNewGame={() => window.location.reload()}
+            onNewGame={newGame}
+            onBackToMenu={() => { setGameMode(null); newGame(); }}
             onShare={generateShareCard} showCard={showCard} closeCard={() => setShowCard(false)}
             canvasRef={canvasRef} onDownload={downloadCard} />
         )}
@@ -600,7 +611,7 @@ function RosterPanel({ roster, score, onPick, blind }) {
 }
 
 // ═══════════════ REVEAL SCREEN ═══════════════
-function RevealScreen({ roster, score, rankInfo, chemistry, onNewGame, onShare, showCard, closeCard, canvasRef, onDownload }) {
+function RevealScreen({ roster, score, rankInfo, chemistry, onNewGame, onShare, showCard, closeCard, canvasRef, onDownload, onBackToMenu }) {
   const [step, setStep] = useState(0);
   const flavorRef = useRef(null);
   if (!flavorRef.current) flavorRef.current = getFlavorText(score);
@@ -647,6 +658,7 @@ function RevealScreen({ roster, score, rankInfo, chemistry, onNewGame, onShare, 
             <div className="flex gap-2 justify-center flex-wrap">
               <button onClick={onNewGame} className="bg-white text-black px-8 md:px-10 py-3 md:py-3.5 rounded-full font-black uppercase tracking-[0.15em] text-[10px] md:text-xs hover:scale-105 active:scale-95 transition-all shadow-xl cursor-pointer">再来一局</button>
               <button onClick={onShare} className="bg-white/10 border border-white/20 text-white px-6 py-3 rounded-full font-black uppercase tracking-[0.1em] text-[10px] hover:scale-105 transition-all cursor-pointer flex items-center gap-1.5"><Share2 size={14} />分享</button>
+              <button onClick={onBackToMenu} className="bg-white/5 border border-white/10 text-white/40 px-5 py-3 rounded-full font-black uppercase tracking-[0.1em] text-[10px] hover:text-white hover:border-white/30 transition-all cursor-pointer mt-2">返回主页</button>
             </div>
           </div>
         </div>
